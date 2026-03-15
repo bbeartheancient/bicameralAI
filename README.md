@@ -12,3 +12,5 @@ PZ = 180
 P8 = 247.5
 
 CZ and OZ are always at 0 degrees
+
+you can also just move P7 to 135 degrees if you want
