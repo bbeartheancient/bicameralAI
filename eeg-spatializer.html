@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octonion EEG Spatializer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0f;
+  color: #c8d0e0;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#header {
+  padding: 8px 16px;
+  background: #0d0d14;
+  border-bottom: 1px solid #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+}
+#header h1 {
+  font-size: 14px;
+  color: #6ee7b7;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+#header .status {
+  font-size: 11px;
+  color: #64748b;
+}
+
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+#sidebar {
+  width: 320px;
+  background: #0d0d14;
+  border-right: 1px solid #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.panel {
+  border-bottom: 1px solid #1a1a2e;
+  padding: 12px;
+}
+.panel-title {
+  font-size: 10px;
+  color: #6ee7b7;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+#viewport {
+  flex: 1;
+  position: relative;
+}
+#viewport canvas {
+  display: block;
+}
+
+/* Controls */
+.btn {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4e;
+  color: #c8d0e0;
+  padding: 6px 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover { background: #2a2a4e; border-color: #6ee7b7; }
+.btn.active { background: #1a3a2e; border-color: #6ee7b7; color: #6ee7b7; }
+
+input[type="file"] { display: none; }
+
+.file-label {
+  display: inline-block;
+  background: #1a1a2e;
+  border: 1px dashed #2a2a4e;
+  color: #c8d0e0;
+  padding: 8px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  transition: all 0.2s;
+}
+.file-label:hover { border-color: #6ee7b7; color: #6ee7b7; }
+
+#playback {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+#timeline {
+  width: 100%;
+  margin-top: 8px;
+  accent-color: #6ee7b7;
+}
+
+/* Channel list */
+.channel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 11px;
+}
+.channel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.channel-name { width: 24px; color: #6ee7b7; }
+.channel-octonion { width: 16px; color: #f59e0b; }
+.channel-phase { color: #64748b; font-size: 10px; }
+.channel-bar {
+  flex: 1;
+  height: 4px;
+  background: #1a1a2e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.channel-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.05s;
+}
+
+/* Matrix display */
+#matrix-display {
+  font-size: 9px;
+  line-height: 1.6;
+  font-family: 'Courier New', monospace;
+}
+#matrix-display table {
+  border-collapse: collapse;
+  width: 100%;
+}
+#matrix-display td, #matrix-display th {
+  padding: 2px 4px;
+  text-align: center;
+  border: 1px solid #1a1a2e;
+}
+#matrix-display th {
+  color: #6ee7b7;
+  background: #0a0a12;
+}
+.matrix-cell-active {
+  background: #1a3a2e !important;
+  color: #6ee7b7;
+}
+
+/* DFT output panel */
+.dft-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 2px;
+  font-size: 10px;
+}
+.dft-label { width: 16px; color: #f59e0b; }
+.dft-mag { color: #6ee7b7; width: 50px; text-align: right; }
+.dft-phase-val { color: #64748b; width: 60px; text-align: right; }
+.dft-bar-container {
+  flex: 1;
+  height: 12px;
+  background: #1a1a2e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.dft-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* Tunnel diode panel */
+.td-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 10px;
+}
+.td-channel { width: 14px; color: #f59e0b; font-weight: bold; }
+.td-z { width: 55px; text-align: right; }
+.td-coherence { width: 45px; text-align: right; }
+.td-z-bar {
+  flex: 1;
+  height: 8px;
+  background: #1a1a2e;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.td-z-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.05s;
+}
+.td-z-zero-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #ef4444;
+  left: 50%;
+}
+.coherence-high { color: #6ee7b7; }
+.coherence-mid { color: #f59e0b; }
+.coherence-low { color: #64748b; }
+
+/* Info overlay */
+#info-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 10px;
+  color: #64748b;
+  text-align: right;
+  pointer-events: none;
+}
+#info-overlay .value { color: #6ee7b7; }
+
+/* Waveform mini display */
+#waveform-panel {
+  height: 120px;
+  position: relative;
+}
+#waveform-canvas {
+  width: 100%;
+  height: 100%;
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Octonion EEG Spatializer</h1>
+  <span class="status" id="status-text">No data loaded</span>
+</div>
+
+<div id="main">
+  <div id="sidebar">
+    <!-- Data input -->
+    <div class="panel">
+      <div class="panel-title">Data Input</div>
+      <label class="file-label" for="csv-input">
+        Upload 8-Channel EEG CSV
+      </label>
+      <input type="file" id="csv-input" accept=".csv">
+      <div style="margin-top:8px; display:flex; gap:6px;">
+        <button class="btn" id="btn-demo">Load Demo Data</button>
+        <button class="btn" id="btn-sample-info" title="Sample info">?</button>
+      </div>
+      <div id="playback">
+        <button class="btn" id="btn-play">▶</button>
+        <button class="btn" id="btn-pause">⏸</button>
+        <button class="btn" id="btn-reset">⏮</button>
+        <span style="font-size:10px;color:#64748b;" id="frame-counter">0 / 0</span>
+      </div>
+      <input type="range" id="timeline" min="0" max="0" value="0">
+      <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
+        <span style="font-size:10px;color:#64748b;">Speed:</span>
+        <input type="range" id="speed-slider" min="1" max="60" value="15" style="flex:1;accent-color:#6ee7b7;">
+        <span style="font-size:10px;color:#6ee7b7;" id="speed-label">15 fps</span>
+      </div>
+    </div>
+
+    <!-- Real-time Connection -->
+    <div class="panel">
+      <div class="panel-title">Real-Time Connection</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <button class="btn" id="btn-ws-connect">WebSocket</button>
+        <button class="btn" id="btn-serial-connect">USB Serial</button>
+        <button class="btn" id="btn-disconnect" style="display:none;">Disconnect</button>
+      </div>
+      <div id="ws-config" style="display:none;margin-bottom:6px;">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <span style="font-size:10px;color:#64748b;">ws://</span>
+          <input type="text" id="ws-url" value="localhost:8765" style="flex:1;background:#1a1a2e;border:1px solid #2a2a4e;color:#c8d0e0;padding:3px 6px;font-family:'Courier New';font-size:10px;">
+          <button class="btn" id="btn-ws-go" style="padding:3px 8px;">Go</button>
+        </div>
+      </div>
+      <div id="serial-config" style="display:none;margin-bottom:6px;">
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:10px;color:#64748b;">Baud:</span>
+          <select id="serial-baud" style="background:#1a1a2e;border:1px solid #2a2a4e;color:#c8d0e0;padding:2px;font-family:'Courier New';font-size:10px;">
+            <option value="9600">9600</option>
+            <option value="115200" selected>115200</option>
+            <option value="230400">230400</option>
+            <option value="256000">256000</option>
+            <option value="921600">921600</option>
+          </select>
+          <button class="btn" id="btn-serial-go" style="padding:3px 8px;">Select Port</button>
+        </div>
+        <div style="font-size:9px;color:#64748b;margin-top:4px;">
+          Expects: 8 comma-separated values per line<br>
+          e.g. "49271.5,49957.8,49644.2,..."
+        </div>
+      </div>
+      <div id="rt-status" style="font-size:10px;color:#64748b;">
+        <span id="rt-indicator" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#64748b;margin-right:4px;"></span>
+        <span id="rt-status-text">Disconnected</span>
+        <span id="rt-fps" style="float:right;"></span>
+      </div>
+      <div id="rt-buffer-info" style="font-size:9px;color:#64748b;margin-top:2px;display:none;">
+        Buffer: <span id="rt-buffer-count">0</span> frames |
+        Latency: <span id="rt-latency">0</span>ms
+      </div>
+    </div>
+
+    <!-- Channel mapping (editable) -->
+    <div class="panel">
+      <div class="panel-title">Channel Mapping (EEG → Octonion)</div>
+      <div id="channel-list"></div>
+      <div style="margin-top:6px;font-size:9px;color:#64748b;">
+        Click angle values to edit. CZ/OZ use Y-axis (zenith/nadir).
+      </div>
+    </div>
+
+    <!-- Waveform -->
+    <div class="panel">
+      <div class="panel-title">Waveforms</div>
+      <div id="waveform-panel">
+        <canvas id="waveform-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Tunnel Diode Z-Vector -->
+    <div class="panel">
+      <div class="panel-title">Tunnel Diode Z-Vector (m, i, k)</div>
+      <div id="tunnel-diode-panel"></div>
+      <div style="margin-top:6px;">
+        <canvas id="iv-curve-canvas" width="280" height="100" style="width:100%;height:80px;border:1px solid #1a1a2e;border-radius:4px;"></canvas>
+      </div>
+    </div>
+
+    <!-- Octonion matrix -->
+    <div class="panel">
+      <div class="panel-title">Octonion Cayley Table</div>
+      <div id="matrix-display"></div>
+    </div>
+
+    <!-- DFT output -->
+    <div class="panel">
+      <div class="panel-title">Matrix Output (Phase / Magnitude)</div>
+      <div id="dft-output"></div>
+    </div>
+  </div>
+
+  <div id="viewport">
+    <div id="info-overlay">
+      <div>Frame: <span class="value" id="ov-frame">—</span></div>
+      <div>Channels: <span class="value">8</span></div>
+      <div>Matrix: <span class="value">8×8 Octonion</span></div>
+      <div>Z-Vector: <span class="value">m, i, k (TD buffered)</span></div>
+      <div>Z Mode: <span class="value" id="ov-zmode">Z → 0</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+// OCTONION ALGEBRA ENGINE
+// ============================================================
+const BASIS = ['1', 'i', 'j', 'k', 'l', 'm', 'n', 'o'];
+const BASIS_IDX = {}; BASIS.forEach((b, i) => BASIS_IDX[b] = i);
+
+// Cayley multiplication table from table-1.csv
+// cayleyTable[row][col] = result (as string like "1", "-i", "m", "-o", etc.)
+const cayleyTable = [
+  // ×    1     i     j     k     l     m     n     o
+  /*1*/ ['1',  'i',  'j',  'k',  'l',  'm',  'n',  'o'],
+  /*i*/ ['i',  '-1', 'k', '-j',  'm', '-l', '-o',  'n'],  // row i: i,i=-1; i,j=k; i,k=-j; i,l=m; i,m=-l; i,n=-o; i,o=n
+  /*j*/ ['j', '-k',  '-1', 'i',  'n',  'o', '-l', '-m'],  // row j
+  /*k*/ ['k',  'j', '-i',  '-1', 'o', '-n',  'm', '-l'],  // row k
+  /*l*/ ['l', '-m', '-n', '-o',  '-1', 'i',  'j',  'k'],  // row l
+  /*m*/ ['m',  'l', '-o',  'n', '-i',  '-1', '-k',  'j'],  // row m
+  /*n*/ ['n',  'o',  'l', '-m', '-j',  'k',  '-1', '-i'],  // row n
+  /*o*/ ['o', '-n',  'm',  'l', '-k', '-j',  'i',  '-1'],  // row o
+];
+
+// Parse the Cayley table from the actual CSV data
+// The CSV has: ×,1,m,n,o,l,i,j,k with specific column ordering
+// Let me re-read and parse it properly
+const csvCayleyRows = [
+  ['1', '1',  'm',  'n',  'o',  'l',  'i',  'j',  'k'],
+  ['i', 'i', '-l', '-o',  'n',  'm', '-1',  'k', '-j'],
+  ['j', 'j',  'o', '-l', '-m',  'n', '-k', '-1',  'i'],
+  ['k', 'k', '-n',  'm', '-l',  'o',  'j', '-i', '-1'],
+  ['l', 'l',  'i',  'j',  'k', '-1', '-m', '-n', '-o'],
+  ['m', 'm', '-1', '-k',  'j', '-i',  'l', '-o',  'n'],
+  ['n', 'n',  'k', '-1', '-i', '-j',  'o',  'l', '-m'],
+  ['o', 'o', '-j',  'i', '-1', '-k', '-n',  'm',  'l'],
+];
+// CSV column order is: ×, 1, m, n, o, l, i, j, k
+const csvColOrder = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
+
+// Build proper Cayley table indexed by standard order
+const CAYLEY = Array(8).fill(null).map(() => Array(8).fill(null));
+for (let r = 0; r < 8; r++) {
+  const rowBasis = csvCayleyRows[r][0]; // row label
+  const ri = BASIS_IDX[rowBasis];
+  for (let c = 0; c < 8; c++) {
+    const colBasis = csvColOrder[c];
+    const ci = BASIS_IDX[colBasis];
+    CAYLEY[ri][ci] = csvCayleyRows[r][c + 1];
+  }
+}
+
+// Parse a basis product string like "-k" into { sign: -1, index: 3 }
+function parseBasisProduct(str) {
+  str = str.trim();
+  let sign = 1;
+  if (str.startsWith('-')) { sign = -1; str = str.substring(1); }
+  return { sign, index: BASIS_IDX[str] };
+}
+
+// Multiply two octonion vectors (each is array of 8 real numbers)
+// Result[k] = sum over i,j where CAYLEY[i][j] contributes to basis k
+function octonionMultiply(a, b) {
+  const result = new Float64Array(8);
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      const { sign, index } = parseBasisProduct(CAYLEY[i][j]);
+      result[index] += sign * a[i] * b[j];
+    }
+  }
+  return result;
+}
+
+// Apply octonion matrix transform: multiply the input signal vector
+// by each row of the Cayley table to produce 8 output channels
+function octonionMatrixTransform(inputVec) {
+  const output = [];
+  for (let row = 0; row < 8; row++) {
+    let sum = 0;
+    for (let col = 0; col < 8; col++) {
+      const { sign, index } = parseBasisProduct(CAYLEY[row][col]);
+      // The matrix element contributes sign * input[col]
+      // weighted by the basis element's position
+      sum += sign * inputVec[col];
+    }
+    output.push(sum);
+  }
+  return output;
+}
+
+// Phase angles from row output table (degrees) — MUTABLE for live editing
+const PHASE_ANGLES = {
+  '1': 0,      // 360 ≡ 0 (CZ: Zenith — positioned on Y axis, not ring)
+  'i': 202.5,
+  'j': 0,      // 360 ≡ 0 (OZ: Nadir — positioned on Y axis, not ring)
+  'k': 180.0,  // Was 157.5, corrected to 180°
+  'l': 67.5,
+  'm': 292.5,
+  'n': 315.0,
+  'o': 337.5
+};
+
+// dB loss from row output table
+const DB_LOSS = {
+  '1': Infinity,
+  'i': 14.4,
+  'j': 9.0,
+  'k': 14.4,
+  'l': 3.7,
+  'm': 14.4,
+  'n': 9.0,
+  'o': 6.7
+};
+
+// ============================================================
+// TUNNEL DIODE CIRCUIT SIMULATION (Falstad-derived)
+// ============================================================
+// Circuit topology from Falstad export:
+//   AC source → Tunnel Diode → 22Ω sense R → 0.09V DC bias
+//   → 4.7kΩ → Op-amp 1 (inverting, 100nF feedback cap)
+//   → Diode clamp → 4.7kΩ → Op-amp 2 (18kΩ feedback, 22pF cap)
+//   → Anti-parallel diodes to ground
+//
+// Applied to octonion channels m, i, k (the Z-vector channels)
+// Implements Weyl-Kondo coherence: Z → 0 (not Z = 0)
+
+const TUNNEL_DIODE_PARAMS = {
+  // Esaki diode I-V curve parameters
+  Ip: 0.001,        // Peak current (1mA)
+  Vp: 0.1,          // Peak voltage
+  Iv: 0.0001,       // Valley current (0.1mA)
+  Vv: 0.4,          // Valley voltage
+  Is: 1e-12,        // Saturation current
+  n: 1.5,           // Ideality factor
+  Vt: 0.026,        // Thermal voltage (26mV at 300K)
+
+  // Circuit component values
+  R_sense: 22,       // Current sense resistor (Ω)
+  R_input: 4700,     // Input resistor (Ω)
+  R_feedback1: 4700, // Op-amp 1 feedback path (via cap)
+  C_feedback1: 1e-7, // 100nF feedback capacitor
+  R_feedback2: 18000,// Op-amp 2 feedback resistor (Ω)
+  C_feedback2: 2.2e-11, // 22pF feedback capacitor
+  V_bias: 0.09,      // DC bias voltage (near Vp)
+
+  // Simulation state (per channel)
+  states: {
+    'm': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
+    'i': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
+    'k': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
+  }
+};
+
+// Tunnel diode I-V characteristic (Esaki diode model)
+// I(V) = Ip * (V/Vp) * exp(1 - V/Vp) + Is * (exp(V/(n*Vt)) - 1)
+function tunnelDiodeIV(V) {
+  const p = TUNNEL_DIODE_PARAMS;
+  if (V < 0) return -p.Is * (Math.exp(-V / (p.n * p.Vt)) - 1);
+
+  // Peak current component (quantum tunneling)
+  const I_tunnel = p.Ip * (V / p.Vp) * Math.exp(1 - V / p.Vp);
+
+  // Excess current in valley region
+  const I_excess = p.Iv * Math.exp((V - p.Vv) / (p.n * p.Vt * 2));
+
+  // Normal diode current
+  const I_diode = p.Is * (Math.exp(V / (p.n * p.Vt)) - 1);
+
+  return I_tunnel + I_excess + I_diode;
+}
+
+// Differential resistance dV/dI at operating point
+function tunnelDiodeDiffR(V) {
+  const dV = 0.0001;
+  const I1 = tunnelDiodeIV(V);
+  const I2 = tunnelDiodeIV(V + dV);
+  const dI = I2 - I1;
+  if (Math.abs(dI) < 1e-15) return 1e12; // Very high R if flat
+  return dV / dI; // Can be negative in NDR region!
+}
+
+// Weyl-Kondo Z-vector coherence function
+// Z → 0 asymptotically: total impedance approaches zero
+// when tunnel diode NDR partially cancels series resistance
+function weylKondoZ(V, R_series) {
+  const Rd = tunnelDiodeDiffR(V);
+  // Total impedance: series R + differential R (which can be negative)
+  const Z_total = R_series + Rd;
+
+  // Coherence factor: how close Z is to zero
+  // 1.0 = perfect coherence (Z = 0), 0.0 = no coherence
+  // Uses asymptotic approach: Z → 0, never reaches exactly 0
+  const Z_magnitude = Math.abs(Z_total);
+  const coherence = Math.exp(-Z_magnitude / R_series);
+
+  return { Z: Z_total, coherence, Rd };
+}
+
+// Process a signal sample through the tunnel diode circuit
+// Returns: { output, Z, coherence, diodeV, diodeI }
+function processTunnelDiodeChannel(inputSignal, channelKey, dt) {
+  const p = TUNNEL_DIODE_PARAMS;
+  const state = p.states[channelKey];
+  if (!state) return { output: inputSignal, Z: p.R_sense, coherence: 0 };
+
+  // Scale input to voltage range suitable for tunnel diode
+  // EEG normalized to 0.5-1.5, map to ~0-0.6V range for the diode
+  const V_in = (inputSignal - 0.5) * 0.6;
+
+  // --- Stage 1: Tunnel diode + sense resistor ---
+  // Diode voltage evolves toward bias + input signal
+  const V_target = p.V_bias + V_in * 0.1; // Small signal modulation around bias
+  // RC time constant for diode voltage settling
+  const tau_diode = p.R_sense * 1e-9; // Fast settling
+  state.vDiode += (V_target - state.vDiode) * Math.min(1, dt / (tau_diode + dt));
+
+  // Current through tunnel diode
+  const I_diode = tunnelDiodeIV(state.vDiode);
+  // Voltage across sense resistor
+  const V_sense = I_diode * p.R_sense;
+
+  // Weyl-Kondo impedance
+  const wk = weylKondoZ(state.vDiode, p.R_sense);
+
+  // --- Stage 2: Inverting integrator (op-amp 1) ---
+  // V_out1 = -1/(R*C) * integral(V_sense) dt
+  const integrator_gain = -1 / (p.R_input * p.C_feedback1);
+  state.vCap1 += V_sense * integrator_gain * dt;
+  // Clamp (diode at output)
+  state.vCap1 = Math.max(-0.6, Math.min(0.6, state.vCap1));
+
+  // --- Stage 3: Inverting amplifier (op-amp 2) ---
+  // Gain = -R_feedback2 / R_input with low-pass from C_feedback2
+  const gain2 = -p.R_feedback2 / p.R_input;
+  const tau2 = p.R_feedback2 * p.C_feedback2;
+  const target2 = state.vCap1 * gain2;
+  state.vCap2 += (target2 - state.vCap2) * Math.min(1, dt / (tau2 + dt));
+  // Anti-parallel diode clamp (±0.6V)
+  state.vCap2 = Math.max(-0.6, Math.min(0.6, state.vCap2));
+
+  // --- Output: blend original signal with circuit-processed signal ---
+  // The coherence factor determines how much the Z→0 buffering affects the output
+  // Higher coherence = signal passes through with less impedance loss
+  // This is the key Weyl-Kondo effect: near-zero impedance buffering
+  const buffered = inputSignal + state.vCap2 * wk.coherence * 0.5;
+
+  // Apply the Z→0 gain: as impedance approaches zero, signal is preserved
+  // with minimal loss (but never perfect - always approaching, never reaching)
+  const Z_gain = 1.0 / (1.0 + Math.abs(wk.Z) * 0.01);
+  const output = inputSignal * (1 - wk.coherence) + buffered * wk.coherence * Z_gain;
+
+  state.prevOut = output;
+
+  return {
+    output,
+    Z: wk.Z,
+    coherence: wk.coherence,
+    Rd: wk.Rd,
+    diodeV: state.vDiode,
+    diodeI: I_diode,
+    stage1: V_sense,
+    stage2: state.vCap1,
+    stage3: state.vCap2
+  };
+}
+
+// Channels that have tunnel diode modulators
+const TUNNEL_DIODE_CHANNELS = ['m', 'i', 'k'];
+
+// Store latest tunnel diode diagnostics for UI
+let tunnelDiodeDiagnostics = {};
+
+// Channel mapping: EEG electrode → Octonion basis
+const CHANNEL_MAP = [
+  { eeg: 'F7', octonion: 'l', csvIdx: 0, angle: 67.5,  gain: 1.2, color: '#ef4444' },
+  { eeg: 'Fpz', octonion: 'o', csvIdx: 1, angle: 337.5, gain: 1.3, color: '#f97316' },
+  { eeg: 'P7', octonion: 'k', csvIdx: 2, angle: 180.0, gain: 0.9, color: '#eab308' },
+  { eeg: 'CZ', octonion: '1', csvIdx: 3, angle: 0,     gain: 1.0, color: '#22c55e' },
+  { eeg: 'F8', octonion: 'n', csvIdx: 4, angle: 315.0, gain: 1.0, color: '#06b6d4' },
+  { eeg: 'PZ', octonion: 'i', csvIdx: 5, angle: 202.5, gain: 1.1, color: '#3b82f6' },
+  { eeg: 'OZ', octonion: 'j', csvIdx: 6, angle: 0,     gain: 0.8, color: '#8b5cf6' },
+  { eeg: 'P8', octonion: 'm', csvIdx: 7, angle: 292.5, gain: 0.7, color: '#ec4899' },
+];
+
+// ============================================================
+// EEG DATA MANAGEMENT
+// ============================================================
+let eegData = null; // Array of frames, each frame is array of 8 channel values
+let currentFrame = 0;
+let isPlaying = false;
+let playbackSpeed = 15; // fps
+let lastFrameTime = 0;
+
+function generateDemoData(numFrames = 1349) {
+  const data = [];
+  const freqs = [8, 10, 12, 9, 11, 7, 13, 8.5]; // Alpha-band-ish
+  const amps = [1.0, 0.8, 1.2, 0.6, 0.9, 1.1, 0.7, 1.0];
+  const phases = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
+  const sampleRate = 256;
+
+  for (let t = 0; t < numFrames; t++) {
+    const frame = [];
+    for (let ch = 0; ch < 8; ch++) {
+      const tSec = t / sampleRate;
+      let val = amps[ch] * Math.sin(2 * Math.PI * freqs[ch] * tSec + phases[ch]);
+      // Add some harmonics
+      val += 0.3 * Math.sin(2 * Math.PI * freqs[ch] * 2 * tSec + phases[ch] * 1.5);
+      val += 0.1 * Math.sin(2 * Math.PI * 30 * tSec); // Beta component
+      // Add noise
+      val += (Math.random() - 0.5) * 0.2;
+      // Normalize to 0.5 - 1.5 range
+      frame.push(0.5 + (val + 2) / 4);
+    }
+    data.push(frame);
+  }
+  return data;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const data = [];
+  let startIdx = 0;
+
+  // Try to detect header
+  const firstLine = lines[0];
+  const firstVals = firstLine.split(',').map(v => parseFloat(v.trim()));
+  const isSequentialInts = firstVals.length > 10 &&
+    firstVals.slice(0, 10).every((v, i) => v === i);
+  if ((firstLine && isNaN(parseFloat(firstLine.split(',')[0]))) || isSequentialInts) {
+    startIdx = 1; // Skip header (text or sequential index row like 0,1,2,3...)
+  }
+
+  // Parse all rows
+  const rows = [];
+  for (let i = startIdx; i < lines.length; i++) {
+    const vals = lines[i].split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    if (vals.length > 0) rows.push(vals);
+  }
+
+  if (rows.length === 0) return data;
+
+  // Auto-detect orientation:
+  // If we have ~8 rows with many columns → transposed (channels as rows, samples as columns)
+  // If we have many rows with ~8 columns → normal (samples as rows, channels as columns)
+  const numRows = rows.length;
+  const numCols = rows[0].length;
+
+  if (numRows <= 10 && numCols > 10) {
+    // Transposed format: 8 rows × N columns → transpose to N × 8
+    console.log(`Detected transposed format: ${numRows} channels × ${numCols} samples`);
+    const numChannels = Math.min(numRows, 8);
+    for (let col = 0; col < numCols; col++) {
+      const frame = [];
+      for (let ch = 0; ch < numChannels; ch++) {
+        frame.push(rows[ch][col] || 0);
+      }
+      // Pad to 8 if fewer channels
+      while (frame.length < 8) frame.push(0);
+      data.push(frame);
+    }
+  } else {
+    // Normal format: N rows × 8 columns
+    console.log(`Detected normal format: ${numRows} samples × ${numCols} columns`);
+    for (const row of rows) {
+      if (row.length >= 8) {
+        data.push(row.slice(0, 8));
+      }
+    }
+  }
+
+  return data;
+}
+
+function normalizeData(data) {
+  // Normalize each channel to 0.5 - 1.5 range
+  const numChannels = 8;
+  const mins = new Array(numChannels).fill(Infinity);
+  const maxs = new Array(numChannels).fill(-Infinity);
+
+  for (const frame of data) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      if (frame[ch] < mins[ch]) mins[ch] = frame[ch];
+      if (frame[ch] > maxs[ch]) maxs[ch] = frame[ch];
+    }
+  }
+
+  return data.map(frame => {
+    const normalized = [];
+    for (let ch = 0; ch < numChannels; ch++) {
+      const range = maxs[ch] - mins[ch];
+      if (range > 0) {
+        normalized.push(((frame[ch] - mins[ch]) / range) * 1.0 + 0.5);
+      } else {
+        normalized.push(1.0);
+      }
+    }
+    return normalized;
+  });
+}
+
+// ============================================================
+// THREE.JS VISUALIZATION
+// ============================================================
+let scene, camera, renderer, controls;
+let channelNodes = [];  // Meshes for each channel
+let channelLabels = []; // Label sprites for each channel
+let channelLines = [];  // Connection lines
+let connectionLines = [];
+let gridHelper;
+let outputNodes = [];   // Meshes for matrix output
+let trailPoints = [];   // Trail history
+
+function initThree() {
+  const container = document.getElementById('viewport');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0a0f);
+  scene.fog = new THREE.FogExp2(0x0a0a0f, 0.015);
+
+  camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
+  camera.position.set(0, 8, 12);
+  camera.lookAt(0, 0, 0);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0x334455, 0.6);
+  scene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 10, 5);
+  scene.add(dirLight);
+  const pointLight = new THREE.PointLight(0x6ee7b7, 1, 30);
+  pointLight.position.set(0, 5, 0);
+  scene.add(pointLight);
+
+  // Grid
+  gridHelper = new THREE.GridHelper(20, 20, 0x1a1a2e, 0x0d0d14);
+  gridHelper.position.y = -2;
+  scene.add(gridHelper);
+
+  // Center reference
+  const centerGeo = new THREE.SphereGeometry(0.15, 16, 16);
+  const centerMat = new THREE.MeshPhongMaterial({ color: 0x6ee7b7, emissive: 0x2a5a4a, transparent: true, opacity: 0.7 });
+  const centerSphere = new THREE.Mesh(centerGeo, centerMat);
+  scene.add(centerSphere);
+
+  // Create channel nodes (input ring)
+  // CZ (row 1, Zenith) is directly above center
+  // OZ (row j, Nadir) is directly below center
+  // Other channels are on the horizontal ring at their phase angles
+  const inputRadius = 4;
+  const zenithY = 3.5;   // CZ above center
+  const nadirY = -3.5;   // OZ below center
+  CHANNEL_MAP.forEach((ch, idx) => {
+    let x, y, z;
+    if (ch.octonion === '1') {
+      // CZ = Zenith: directly above center
+      x = 0; y = zenithY; z = 0;
+    } else if (ch.octonion === 'j') {
+      // OZ = Nadir: directly below center
+      x = 0; y = nadirY; z = 0;
+    } else {
+      // All other channels on horizontal ring at their phase angles
+      const angle = (ch.angle * Math.PI) / 180;
+      x = inputRadius * Math.cos(angle);
+      y = 0;
+      z = inputRadius * Math.sin(angle);
+    }
+
+    // Sphere for channel (octahedron for TD-buffered Z-vector channels)
+    const isTD = TUNNEL_DIODE_CHANNELS.includes(ch.octonion);
+    const geo = isTD
+      ? new THREE.OctahedronGeometry(0.3, 0)
+      : new THREE.SphereGeometry(0.25, 16, 16);
+    const mat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(ch.color),
+      emissive: new THREE.Color(ch.color).multiplyScalar(0.3),
+      transparent: true,
+      opacity: 0.9,
+      wireframe: isTD // Wireframe for TD channels
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y, z);
+    mesh.userData = { baseY: y, channel: ch, isTunnelDiode: isTD };
+    scene.add(mesh);
+    channelNodes.push(mesh);
+
+    // Add glow ring for TD channels
+    if (isTD) {
+      const ringGeo = new THREE.RingGeometry(0.35, 0.45, 16);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x6ee7b7,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.position.set(x, y, z);
+      ring.rotation.x = Math.PI / 2;
+      ring.userData = { tdRing: true, channelKey: ch.octonion };
+      scene.add(ring);
+    }
+
+    // Label sprite
+    const label = createTextSprite(ch.eeg + ' [' + ch.octonion + ']', ch.color);
+    label.position.set(x, y + 0.6, z);
+    scene.add(label);
+    channelLabels.push(label);
+
+    // Line from center to node
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(x, y, z)
+    ]);
+    const lineMat = new THREE.LineBasicMaterial({ color: new THREE.Color(ch.color), transparent: true, opacity: 0.3 });
+    const line = new THREE.Line(lineGeo, lineMat);
+    scene.add(line);
+    connectionLines.push(line);
+  });
+
+  // Create output nodes (outer ring)
+  const outputRadius = 7;
+  BASIS.forEach((b, idx) => {
+    const phaseAngle = (PHASE_ANGLES[b] * Math.PI) / 180;
+    const x = outputRadius * Math.cos(phaseAngle);
+    const z = outputRadius * Math.sin(phaseAngle);
+
+    const geo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+    const mat = new THREE.MeshPhongMaterial({
+      color: 0x334455,
+      emissive: 0x112233,
+      transparent: true,
+      opacity: 0.6
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, -1, z);
+    mesh.userData = { baseY: -1, basis: b };
+    scene.add(mesh);
+    outputNodes.push(mesh);
+
+    const label = createTextSprite('OUT:' + b, '#64748b');
+    label.position.set(x, -0.3, z);
+    scene.add(label);
+  });
+
+  // Mouse orbit control (simple)
+  setupOrbitControls(container);
+
+  window.addEventListener('resize', () => {
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+}
+
+function createTextSprite(text, color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 24px Courier New';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.fillText(text, 128, 40);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(2, 0.5, 1);
+  return sprite;
+}
+
+// Simple orbit controls
+let isDragging = false;
+let prevMouse = { x: 0, y: 0 };
+let spherical = { theta: 0.3, phi: 1.0, radius: 15 };
+
+function setupOrbitControls(container) {
+  container.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    prevMouse = { x: e.clientX, y: e.clientY };
+  });
+  container.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - prevMouse.x;
+    const dy = e.clientY - prevMouse.y;
+    spherical.theta -= dx * 0.005;
+    spherical.phi = Math.max(0.2, Math.min(Math.PI - 0.2, spherical.phi - dy * 0.005));
+    prevMouse = { x: e.clientX, y: e.clientY };
+    updateCamera();
+  });
+  container.addEventListener('mouseup', () => isDragging = false);
+  container.addEventListener('mouseleave', () => isDragging = false);
+  container.addEventListener('wheel', (e) => {
+    spherical.radius = Math.max(5, Math.min(40, spherical.radius + e.deltaY * 0.01));
+    updateCamera();
+    e.preventDefault();
+  }, { passive: false });
+  updateCamera();
+}
+
+function updateCamera() {
+  const r = spherical.radius;
+  camera.position.x = r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+  camera.position.y = r * Math.cos(spherical.phi);
+  camera.position.z = r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+  camera.lookAt(0, 0, 0);
+}
+
+// ============================================================
+// UI SETUP
+// ============================================================
+function buildChannelList() {
+  const container = document.getElementById('channel-list');
+  container.innerHTML = '';
+  CHANNEL_MAP.forEach((ch, idx) => {
+    const row = document.createElement('div');
+    row.className = 'channel-row';
+    const isAxis = (ch.octonion === '1' || ch.octonion === 'j');
+    row.innerHTML = `
+      <span class="channel-dot" style="background:${ch.color}"></span>
+      <span class="channel-name">${ch.eeg}</span>
+      <span class="channel-octonion">${ch.octonion}</span>
+      <input type="number" class="phase-input" id="phase-${idx}"
+        value="${ch.angle}" min="0" max="360" step="0.5"
+        ${isAxis ? 'disabled title="CZ/OZ on Y-axis"' : ''}
+        style="width:52px;background:${isAxis ? '#0d0d14' : '#1a1a2e'};border:1px solid #2a2a4e;color:${isAxis ? '#64748b' : '#6ee7b7'};padding:1px 4px;font-family:'Courier New';font-size:10px;text-align:right;">
+      <span style="font-size:9px;color:#64748b;">°</span>
+      <div class="channel-bar">
+        <div class="channel-bar-fill" id="chbar-${idx}" style="width:50%;background:${ch.color}"></div>
+      </div>
+    `;
+    container.appendChild(row);
+
+    // Wire up live editing
+    if (!isAxis) {
+      const input = row.querySelector('.phase-input');
+      input.addEventListener('change', () => {
+        const newAngle = parseFloat(input.value) || 0;
+        ch.angle = newAngle;
+        PHASE_ANGLES[ch.octonion] = newAngle;
+        repositionChannelNode(idx);
+      });
+      // Also update on Enter key
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          input.blur();
+          const newAngle = parseFloat(input.value) || 0;
+          ch.angle = newAngle;
+          PHASE_ANGLES[ch.octonion] = newAngle;
+          repositionChannelNode(idx);
+        }
+      });
+    }
+  });
+}
+
+// Reposition a single channel node and its associated objects in 3D
+function repositionChannelNode(idx) {
+  const ch = CHANNEL_MAP[idx];
+  const node = channelNodes[idx];
+  if (!node) return;
+
+  const inputRadius = 4;
+  let x, y, z;
+
+  if (ch.octonion === '1') {
+    x = 0; y = 3.5; z = 0;
+  } else if (ch.octonion === 'j') {
+    x = 0; y = -3.5; z = 0;
+  } else {
+    const angle = (ch.angle * Math.PI) / 180;
+    x = inputRadius * Math.cos(angle);
+    y = 0;
+    z = inputRadius * Math.sin(angle);
+  }
+
+  node.position.set(x, y, z);
+  node.userData.baseY = y;
+
+  // Update connection line
+  const line = connectionLines[idx];
+  if (line) {
+    const positions = line.geometry.attributes.position;
+    positions.setXYZ(1, x, y, z);
+    positions.needsUpdate = true;
+  }
+
+  // Update label sprite
+  const label = channelLabels[idx];
+  if (label) {
+    label.position.set(x, y + 0.6, z);
+  }
+
+  // Update TD ring if applicable
+  scene.children.forEach(child => {
+    if (child.userData && child.userData.tdRing && child.userData.channelKey === ch.octonion) {
+      child.position.set(x, y, z);
+    }
+  });
+
+  console.log(`[Phase] ${ch.eeg} (${ch.octonion}) → ${ch.angle}°, pos: (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
+}
+
+// Reposition ALL channel nodes (used after bulk edits)
+function repositionAllNodes() {
+  CHANNEL_MAP.forEach((ch, idx) => repositionChannelNode(idx));
+}
+
+function buildMatrixDisplay() {
+  const container = document.getElementById('matrix-display');
+  let html = '<table><tr><th>×</th>';
+  BASIS.forEach(b => html += `<th>${b}</th>`);
+  html += '</tr>';
+  for (let r = 0; r < 8; r++) {
+    html += `<tr><th>${BASIS[r]}</th>`;
+    for (let c = 0; c < 8; c++) {
+      html += `<td id="mcell-${r}-${c}">${CAYLEY[r][c]}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  container.innerHTML = html;
+}
+
+function buildDFTOutput() {
+  const container = document.getElementById('dft-output');
+  container.innerHTML = '';
+  const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+  BASIS.forEach((b, idx) => {
+    const row = document.createElement('div');
+    row.className = 'dft-row';
+    row.innerHTML = `
+      <span class="dft-label">${b}</span>
+      <span class="dft-mag" id="dft-mag-${idx}">0.00</span>
+      <span class="dft-phase-val" id="dft-phase-${idx}">0.0°</span>
+      <div class="dft-bar-container">
+        <div class="dft-bar-fill" id="dft-bar-${idx}" style="width:0%;background:${colors[idx]}"></div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function buildTunnelDiodePanel() {
+  const container = document.getElementById('tunnel-diode-panel');
+  container.innerHTML = '';
+  TUNNEL_DIODE_CHANNELS.forEach(ch => {
+    const row = document.createElement('div');
+    row.className = 'td-row';
+    row.innerHTML = `
+      <span class="td-channel">${ch}</span>
+      <span class="td-z" id="td-z-${ch}" title="Impedance">Z: 0.0Ω</span>
+      <span class="td-coherence coherence-low" id="td-coh-${ch}" title="Coherence">0%</span>
+      <div class="td-z-bar">
+        <div class="td-z-zero-line"></div>
+        <div class="td-z-fill" id="td-zbar-${ch}" style="width:50%;background:#3b82f6"></div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateTunnelDiodeUI() {
+  TUNNEL_DIODE_CHANNELS.forEach(ch => {
+    const diag = tunnelDiodeDiagnostics[ch];
+    if (!diag) return;
+
+    const zEl = document.getElementById('td-z-' + ch);
+    const cohEl = document.getElementById('td-coh-' + ch);
+    const barEl = document.getElementById('td-zbar-' + ch);
+
+    if (zEl) {
+      const zStr = diag.Z.toFixed(1);
+      zEl.textContent = `Z:${zStr}Ω`;
+      zEl.style.color = diag.Z < 0 ? '#ef4444' : '#6ee7b7';
+    }
+
+    if (cohEl) {
+      const cohPct = (diag.coherence * 100).toFixed(0);
+      cohEl.textContent = cohPct + '%';
+      cohEl.className = 'td-coherence ' +
+        (diag.coherence > 0.7 ? 'coherence-high' :
+         diag.coherence > 0.3 ? 'coherence-mid' : 'coherence-low');
+    }
+
+    if (barEl) {
+      // Map Z from [-50, 50] to [0%, 100%], center at 50%
+      const zNorm = Math.max(0, Math.min(100, 50 + (diag.Z / 100) * 50));
+      barEl.style.width = zNorm + '%';
+      // Color: green when near zero, red when negative, blue when positive
+      if (Math.abs(diag.Z) < 5) {
+        barEl.style.background = '#6ee7b7'; // Near zero = coherent
+      } else if (diag.Z < 0) {
+        barEl.style.background = '#ef4444'; // NDR region
+      } else {
+        barEl.style.background = '#3b82f6'; // Normal positive R
+      }
+    }
+  });
+
+  drawIVCurve();
+}
+
+function drawIVCurve() {
+  const canvas = document.getElementById('iv-curve-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, w, h);
+
+  // Draw I-V curve
+  const vMin = -0.05, vMax = 0.6;
+  const iMax = 0.002;
+
+  // Axes
+  ctx.strokeStyle = '#1a1a2e';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  const zeroX = (-vMin / (vMax - vMin)) * w;
+  ctx.moveTo(zeroX, 0); ctx.lineTo(zeroX, h);
+  ctx.moveTo(0, h); ctx.lineTo(w, h);
+  ctx.stroke();
+
+  // I-V curve
+  ctx.strokeStyle = '#6ee7b7';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let px = 0; px < w; px++) {
+    const V = vMin + (px / w) * (vMax - vMin);
+    const I = tunnelDiodeIV(V);
+    const py = h - (I / iMax) * h;
+    if (px === 0) ctx.moveTo(px, Math.max(0, Math.min(h, py)));
+    else ctx.lineTo(px, Math.max(0, Math.min(h, py)));
+  }
+  ctx.stroke();
+
+  // NDR region shading
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
+  const vpX = ((0.1 - vMin) / (vMax - vMin)) * w;
+  const vvX = ((0.4 - vMin) / (vMax - vMin)) * w;
+  ctx.fillRect(vpX, 0, vvX - vpX, h);
+
+  // Mark operating points for each TD channel
+  const markers = { 'm': '#ec4899', 'i': '#3b82f6', 'k': '#eab308' };
+  Object.entries(markers).forEach(([ch, color]) => {
+    const diag = tunnelDiodeDiagnostics[ch];
+    if (!diag) return;
+    const px = ((diag.diodeV - vMin) / (vMax - vMin)) * w;
+    const py = h - (diag.diodeI / iMax) * h;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(px, Math.max(3, Math.min(h - 3, py)), 3, 0, Math.PI * 2);
+    ctx.fill();
+    // Label
+    ctx.fillStyle = color;
+    ctx.font = '8px Courier New';
+    ctx.fillText(ch, px + 5, Math.max(10, Math.min(h - 3, py)));
+  });
+
+  // Labels
+  ctx.fillStyle = '#64748b';
+  ctx.font = '8px Courier New';
+  ctx.fillText('V', w - 10, h - 3);
+  ctx.fillText('I', 3, 10);
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.5)';
+  ctx.fillText('NDR', (vpX + vvX) / 2 - 8, 10);
+}
+
+// ============================================================
+// WAVEFORM DRAWING
+// ============================================================
+function drawWaveforms() {
+  if (!eegData) return;
+  const canvas = document.getElementById('waveform-canvas');
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  ctx.scale(2, 2);
+  const w = rect.width;
+  const h = rect.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Draw window of data around current frame
+  const windowSize = Math.min(200, eegData.length);
+  const startFrame = Math.max(0, currentFrame - windowSize);
+  const endFrame = Math.min(eegData.length, currentFrame + 20);
+  const chHeight = h / 8;
+
+  for (let ch = 0; ch < 8; ch++) {
+    const color = CHANNEL_MAP[ch].color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 0.8;
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+
+    for (let f = startFrame; f < endFrame; f++) {
+      const x = ((f - startFrame) / (endFrame - startFrame)) * w;
+      const val = eegData[f][ch];
+      const y = chHeight * ch + chHeight * 0.5 + (val - 1.0) * chHeight * 0.8;
+      if (f === startFrame) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Current frame marker
+    const curX = ((currentFrame - startFrame) / (endFrame - startFrame)) * w;
+    ctx.strokeStyle = '#6ee7b7';
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(curX, chHeight * ch);
+    ctx.lineTo(curX, chHeight * (ch + 1));
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ============================================================
+// MAIN UPDATE LOOP
+// ============================================================
+function updateVisualization() {
+  if (!eegData || eegData.length === 0) return;
+
+  const frame = eegData[currentFrame];
+
+  // Run octonion matrix transform
+  // Map EEG channels to octonion basis order
+  const inputVec = new Array(8);
+  const dt = 1 / 256; // Assume 256Hz sample rate
+  CHANNEL_MAP.forEach(ch => {
+    const basisIdx = BASIS_IDX[ch.octonion];
+    let val = frame[ch.csvIdx] * ch.gain;
+
+    // Apply tunnel diode modulation on Z-vector channels (m, i, k)
+    if (TUNNEL_DIODE_CHANNELS.includes(ch.octonion)) {
+      const result = processTunnelDiodeChannel(val, ch.octonion, dt);
+      val = result.output;
+      tunnelDiodeDiagnostics[ch.octonion] = result;
+    }
+
+    inputVec[basisIdx] = val;
+  });
+
+  const matrixOutput = octonionMatrixTransform(inputVec);
+
+  // Find max output for normalization
+  const maxOut = Math.max(...matrixOutput.map(Math.abs), 0.001);
+
+  // Update 3D channel nodes
+  channelNodes.forEach((node, idx) => {
+    const val = frame[idx];
+    const ch = CHANNEL_MAP[idx];
+    const scale = 0.3 + (val - 0.5) * 0.8;
+    node.scale.setScalar(Math.max(0.1, scale));
+    node.position.y = node.userData.baseY + (val - 1.0) * 2;
+
+    // Pulse emissive based on value
+    const intensity = (val - 0.5) / 1.0;
+
+    // Special handling for tunnel diode channels
+    if (node.userData.isTunnelDiode) {
+      const diag = tunnelDiodeDiagnostics[ch.octonion];
+      if (diag) {
+        // Color shifts toward green as coherence increases (Z → 0)
+        const coh = diag.coherence;
+        node.material.emissive.setRGB(
+          intensity * 0.3 * (1 - coh),
+          intensity * 0.5 * coh + 0.1,
+          intensity * 0.2
+        );
+        // Rotate TD nodes based on coherence
+        node.rotation.y += 0.02 + coh * 0.05;
+        node.rotation.z += 0.01;
+      }
+    } else {
+      node.material.emissive.setHSL(0, 0, intensity * 0.5);
+    }
+  });
+
+  // Update output nodes
+  outputNodes.forEach((node, idx) => {
+    const val = matrixOutput[idx];
+    const normalized = Math.abs(val) / maxOut;
+    const scale = 0.2 + normalized * 0.8;
+    node.scale.setScalar(Math.max(0.1, scale));
+    node.position.y = node.userData.baseY + (val / maxOut) * 2;
+
+    // Color based on sign
+    if (val >= 0) {
+      node.material.color.setHex(0x6ee7b7);
+      node.material.emissive.setHex(0x1a5a3a);
+    } else {
+      node.material.color.setHex(0xef4444);
+      node.material.emissive.setHex(0x5a1a1a);
+    }
+    node.material.opacity = 0.3 + normalized * 0.7;
+  });
+
+  // Update connection lines opacity based on activity
+  connectionLines.forEach((line, idx) => {
+    const val = frame[idx];
+    line.material.opacity = 0.1 + (val - 0.5) * 0.6;
+  });
+
+  // Update channel bars
+  CHANNEL_MAP.forEach((ch, idx) => {
+    const bar = document.getElementById('chbar-' + idx);
+    if (bar) {
+      const pct = ((frame[idx] - 0.5) / 1.0) * 100;
+      bar.style.width = Math.max(2, pct) + '%';
+    }
+  });
+
+  // Update DFT output display
+  for (let idx = 0; idx < 8; idx++) {
+    const mag = Math.abs(matrixOutput[idx]);
+    const phase = PHASE_ANGLES[BASIS[idx]];
+    const normalized = mag / maxOut;
+
+    const magEl = document.getElementById('dft-mag-' + idx);
+    const phaseEl = document.getElementById('dft-phase-' + idx);
+    const barEl = document.getElementById('dft-bar-' + idx);
+
+    if (magEl) magEl.textContent = mag.toFixed(2);
+    if (phaseEl) phaseEl.textContent = phase.toFixed(1) + '°';
+    if (barEl) barEl.style.width = (normalized * 100) + '%';
+  }
+
+  // Highlight active matrix cells
+  // (highlight the row with largest output)
+  let maxRowIdx = 0;
+  let maxRowVal = 0;
+  for (let r = 0; r < 8; r++) {
+    if (Math.abs(matrixOutput[r]) > maxRowVal) {
+      maxRowVal = Math.abs(matrixOutput[r]);
+      maxRowIdx = r;
+    }
+  }
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const cell = document.getElementById('mcell-' + r + '-' + c);
+      if (cell) {
+        if (r === maxRowIdx) {
+          cell.classList.add('matrix-cell-active');
+        } else {
+          cell.classList.remove('matrix-cell-active');
+        }
+      }
+    }
+  }
+
+  // Update frame counter
+  document.getElementById('frame-counter').textContent = `${currentFrame + 1} / ${eegData.length}`;
+  document.getElementById('ov-frame').textContent = currentFrame + 1;
+  document.getElementById('timeline').value = currentFrame;
+
+  // Update tunnel diode diagnostics display
+  updateTunnelDiodeUI();
+
+  drawWaveforms();
+}
+
+function animate(timestamp) {
+  requestAnimationFrame(animate);
+
+  if (isPlaying && eegData) {
+    const elapsed = timestamp - lastFrameTime;
+    const interval = 1000 / playbackSpeed;
+    if (elapsed >= interval) {
+      currentFrame = (currentFrame + 1) % eegData.length;
+      lastFrameTime = timestamp;
+      updateVisualization();
+    }
+  }
+
+  // Slowly rotate output nodes
+  outputNodes.forEach((node) => {
+    node.rotation.y += 0.01;
+    node.rotation.x += 0.005;
+  });
+
+  renderer.render(scene, camera);
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+function loadData(data) {
+  eegData = normalizeData(data);
+  currentFrame = 0;
+  document.getElementById('timeline').max = eegData.length - 1;
+  document.getElementById('status-text').textContent =
+    `Loaded: ${eegData.length} frames × 8 channels`;
+  updateVisualization();
+}
+
+document.getElementById('csv-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const data = parseCSV(ev.target.result);
+    if (data.length > 0) {
+      loadData(data);
+    } else {
+      document.getElementById('status-text').textContent = 'Error: Could not parse CSV';
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('btn-demo').addEventListener('click', () => {
+  const data = generateDemoData();
+  loadData(data);
+});
+
+document.getElementById('btn-play').addEventListener('click', () => {
+  if (!eegData) return;
+  isPlaying = true;
+  lastFrameTime = performance.now();
+});
+
+document.getElementById('btn-pause').addEventListener('click', () => {
+  isPlaying = false;
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  currentFrame = 0;
+  isPlaying = false;
+  if (eegData) updateVisualization();
+});
+
+document.getElementById('timeline').addEventListener('input', (e) => {
+  currentFrame = parseInt(e.target.value);
+  if (eegData) updateVisualization();
+});
+
+document.getElementById('speed-slider').addEventListener('input', (e) => {
+  playbackSpeed = parseInt(e.target.value);
+  document.getElementById('speed-label').textContent = playbackSpeed + ' fps';
+});
+
+document.getElementById('btn-sample-info').addEventListener('click', () => {
+  alert(
+    'Expected CSV format:\n\n' +
+    'Columns: F7, Fpz, P7, CZ, F8, PZ, OZ, P8\n' +
+    '(8 numeric columns, one row per sample)\n\n' +
+    'Optional header row is auto-detected.\n' +
+    'Data will be normalized to 0.5-1.5 range.\n\n' +
+    'Octonion Channel Mapping:\n' +
+    'F7→l(67.5°)  Fpz→o(337.5°)\n' +
+    'P7→k(157.5°) CZ→1(0°)\n' +
+    'F8→n(315°)   PZ→i(202.5°)\n' +
+    'OZ→j(0°)     P8→m(292.5°)'
+  );
+});
+
+// ============================================================
+// REAL-TIME CONNECTION (WebSocket + Web Serial)
+// ============================================================
+let rtConnection = null;    // WebSocket or SerialPort
+let rtMode = null;          // 'ws' | 'serial' | null
+let rtFrameCount = 0;
+let rtLastFpsTime = 0;
+let rtFps = 0;
+let rtBuffer = [];          // Circular buffer for real-time frames
+const RT_BUFFER_MAX = 8192; // Max frames to keep
+let rtNormalize = true;     // Auto-normalize incoming data
+let rtRunningMin = new Array(8).fill(Infinity);
+let rtRunningMax = new Array(8).fill(-Infinity);
+
+// Process a raw 8-channel frame from real-time source
+function processRTFrame(values) {
+  if (values.length < 8) return;
+  const frame = values.slice(0, 8);
+
+  // Update running min/max for normalization
+  for (let ch = 0; ch < 8; ch++) {
+    if (frame[ch] < rtRunningMin[ch]) rtRunningMin[ch] = frame[ch];
+    if (frame[ch] > rtRunningMax[ch]) rtRunningMax[ch] = frame[ch];
+  }
+
+  // Normalize to 0.5-1.5 range
+  const normalized = [];
+  for (let ch = 0; ch < 8; ch++) {
+    const range = rtRunningMax[ch] - rtRunningMin[ch];
+    if (range > 0) {
+      normalized.push(((frame[ch] - rtRunningMin[ch]) / range) * 1.0 + 0.5);
+    } else {
+      normalized.push(1.0);
+    }
+  }
+
+  // Add to buffer
+  rtBuffer.push(normalized);
+  if (rtBuffer.length > RT_BUFFER_MAX) rtBuffer.shift();
+
+  // Update eegData to point to our live buffer
+  eegData = rtBuffer;
+  currentFrame = eegData.length - 1;
+  document.getElementById('timeline').max = eegData.length - 1;
+  document.getElementById('timeline').value = currentFrame;
+
+  // FPS counter
+  rtFrameCount++;
+  const now = performance.now();
+  if (now - rtLastFpsTime > 1000) {
+    rtFps = rtFrameCount;
+    rtFrameCount = 0;
+    rtLastFpsTime = now;
+    const fpsEl = document.getElementById('rt-fps');
+    if (fpsEl) fpsEl.textContent = rtFps + ' sps';
+  }
+
+  // Update buffer info
+  const bufInfo = document.getElementById('rt-buffer-info');
+  if (bufInfo) bufInfo.style.display = 'block';
+  const bufCount = document.getElementById('rt-buffer-count');
+  if (bufCount) bufCount.textContent = rtBuffer.length;
+
+  updateVisualization();
+}
+
+function setRTStatus(connected, text) {
+  const indicator = document.getElementById('rt-indicator');
+  const statusText = document.getElementById('rt-status-text');
+  if (indicator) indicator.style.background = connected ? '#6ee7b7' : '#64748b';
+  if (statusText) statusText.textContent = text;
+  document.getElementById('btn-disconnect').style.display = connected ? '' : 'none';
+  document.getElementById('status-text').textContent = connected ? 'LIVE: ' + text : text;
+}
+
+// --- WebSocket ---
+function connectWebSocket() {
+  const url = 'ws://' + document.getElementById('ws-url').value;
+  setRTStatus(false, 'Connecting to ' + url + '...');
+
+  try {
+    const ws = new WebSocket(url);
+    ws.onopen = () => {
+      rtConnection = ws;
+      rtMode = 'ws';
+      rtBuffer = [];
+      rtRunningMin = new Array(8).fill(Infinity);
+      rtRunningMax = new Array(8).fill(-Infinity);
+      isPlaying = false; // Stop file playback
+      setRTStatus(true, 'WebSocket connected');
+    };
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        // Accept: { channels: [v0..v7] } or { data: [v0..v7] } or just [v0..v7]
+        let values;
+        if (Array.isArray(data)) values = data;
+        else if (data.channels) values = data.channels;
+        else if (data.data) values = data.data;
+        else if (data.frame) values = data.frame;
+        else return;
+
+        processRTFrame(values.map(Number));
+
+        // Update latency if timestamp provided
+        if (data.timestamp) {
+          const latency = Date.now() - data.timestamp;
+          const latEl = document.getElementById('rt-latency');
+          if (latEl) latEl.textContent = latency;
+        }
+      } catch(e) {
+        // Try CSV format: "v0,v1,v2,...,v7"
+        const parts = event.data.trim().split(',');
+        if (parts.length >= 8) {
+          processRTFrame(parts.map(Number));
+        }
+      }
+    };
+    ws.onclose = () => {
+      rtConnection = null;
+      rtMode = null;
+      setRTStatus(false, 'WebSocket disconnected');
+    };
+    ws.onerror = (err) => {
+      setRTStatus(false, 'WebSocket error - check server');
+      console.error('WebSocket error:', err);
+    };
+  } catch(e) {
+    setRTStatus(false, 'Connection failed: ' + e.message);
+  }
+}
+
+// --- Web Serial API ---
+async function connectSerial() {
+  if (!('serial' in navigator)) {
+    setRTStatus(false, 'Web Serial not supported (use Chrome)');
+    return;
+  }
+
+  try {
+    const port = await navigator.serial.requestPort();
+    const baud = parseInt(document.getElementById('serial-baud').value);
+    await port.open({ baudRate: baud });
+
+    rtConnection = port;
+    rtMode = 'serial';
+    rtBuffer = [];
+    rtRunningMin = new Array(8).fill(Infinity);
+    rtRunningMax = new Array(8).fill(-Infinity);
+    isPlaying = false;
+    setRTStatus(true, 'Serial connected @ ' + baud + ' baud');
+
+    // Read loop
+    const decoder = new TextDecoderStream();
+    const readableStreamClosed = port.readable.pipeTo(decoder.writable);
+    const reader = decoder.readable.getReader();
+
+    let lineBuffer = '';
+    const readLoop = async () => {
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          lineBuffer += value;
+          const lines = lineBuffer.split('\n');
+          lineBuffer = lines.pop(); // Keep incomplete line
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            const parts = trimmed.split(',');
+            if (parts.length >= 8) {
+              const values = parts.map(Number);
+              if (values.every(v => !isNaN(v))) {
+                processRTFrame(values);
+              }
+            }
+          }
+        }
+      } catch(e) {
+        console.error('Serial read error:', e);
+      }
+      reader.releaseLock();
+      setRTStatus(false, 'Serial disconnected');
+      rtConnection = null;
+      rtMode = null;
+    };
+    readLoop();
+
+  } catch(e) {
+    setRTStatus(false, 'Serial error: ' + e.message);
+  }
+}
+
+async function disconnect() {
+  if (rtMode === 'ws' && rtConnection) {
+    rtConnection.close();
+  } else if (rtMode === 'serial' && rtConnection) {
+    try { await rtConnection.close(); } catch(e) {}
+  }
+  rtConnection = null;
+  rtMode = null;
+  setRTStatus(false, 'Disconnected');
+  document.getElementById('rt-buffer-info').style.display = 'none';
+}
+
+// RT UI event handlers
+document.getElementById('btn-ws-connect').addEventListener('click', () => {
+  document.getElementById('ws-config').style.display =
+    document.getElementById('ws-config').style.display === 'none' ? 'block' : 'none';
+  document.getElementById('serial-config').style.display = 'none';
+});
+
+document.getElementById('btn-serial-connect').addEventListener('click', () => {
+  document.getElementById('serial-config').style.display =
+    document.getElementById('serial-config').style.display === 'none' ? 'block' : 'none';
+  document.getElementById('ws-config').style.display = 'none';
+});
+
+document.getElementById('btn-ws-go').addEventListener('click', connectWebSocket);
+document.getElementById('ws-url').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') connectWebSocket();
+});
+document.getElementById('btn-serial-go').addEventListener('click', connectSerial);
+document.getElementById('btn-disconnect').addEventListener('click', disconnect);
+
+// ============================================================
+// INIT
+// ============================================================
+buildChannelList();
+buildTunnelDiodePanel();
+buildMatrixDisplay();
+buildDFTOutput();
+initThree();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
