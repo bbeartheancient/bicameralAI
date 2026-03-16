@@ -3,37 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Octonion EEG Spatializer</title>
+<title>Pocket Dimension Omega</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --orange: #fa0;
+  --red: #e60003;
+  --glow-rgb: 255, 102, 0;
+  --danger-glow-rgb: 255, 0, 0;
+  --text-color: #fa0;
+}
+
 body {
-  background: #0a0a0f;
-  color: #c8d0e0;
-  font-family: 'Courier New', monospace;
+  background: #000;
+  color: #fa0;
+  font-family: 'Roboto Condensed', Arial, sans-serif;
   overflow: hidden;
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 50%, rgba(255, 0, 0, 0.03) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
 #header {
   padding: 8px 16px;
-  background: #0d0d14;
-  border-bottom: 1px solid #1a1a2e;
+  background: #000;
+  border-bottom: 3px solid var(--orange);
   display: flex;
   align-items: center;
   gap: 16px;
   z-index: 10;
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
 }
 #header h1 {
-  font-size: 14px;
-  color: #6ee7b7;
-  letter-spacing: 2px;
+  font-size: 18px;
+  color: var(--orange);
+  letter-spacing: 3px;
   text-transform: uppercase;
+  text-shadow: 0 0 5px rgba(255, 102, 0, 0.8), 0 0 10px rgba(255, 102, 0, 0.5);
 }
 #header .status {
-  font-size: 11px;
-  color: #64748b;
+  font-size: 12px;
+  color: var(--orange);
+  opacity: 0.7;
 }
 
 #main {
@@ -44,23 +71,36 @@ body {
 
 #sidebar {
   width: 320px;
-  background: #0d0d14;
-  border-right: 1px solid #1a1a2e;
+  background: #000;
+  border-right: 3px solid var(--orange);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  box-shadow: inset -5px 0 15px rgba(255, 102, 0, 0.1);
 }
 
 .panel {
-  border-bottom: 1px solid #1a1a2e;
+  border-bottom: 3px solid var(--orange);
   padding: 12px;
+  position: relative;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: 0.5;
 }
 .panel-title {
-  font-size: 10px;
-  color: #6ee7b7;
+  font-size: 12px;
+  color: var(--orange);
   letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
 }
 
 #viewport {
@@ -73,34 +113,51 @@ body {
 
 /* Controls */
 .btn {
-  background: #1a1a2e;
-  border: 1px solid #2a2a4e;
-  color: #c8d0e0;
+  background: #000;
+  border: 2px solid var(--orange);
+  color: var(--orange);
   padding: 6px 12px;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
 }
-.btn:hover { background: #2a2a4e; border-color: #6ee7b7; }
-.btn.active { background: #1a3a2e; border-color: #6ee7b7; color: #6ee7b7; }
+.btn:hover { 
+  background: var(--orange); 
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.8);
+}
+.btn.active { 
+  background: var(--red); 
+  border-color: var(--red); 
+  color: #000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+}
 
 input[type="file"] { display: none; }
 
 .file-label {
   display: inline-block;
-  background: #1a1a2e;
-  border: 1px dashed #2a2a4e;
-  color: #c8d0e0;
+  background: #000;
+  border: 2px dashed var(--orange);
+  color: var(--orange);
   padding: 8px 16px;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 12px;
   cursor: pointer;
   text-align: center;
   width: 100%;
   transition: all 0.2s;
+  text-transform: uppercase;
 }
-.file-label:hover { border-color: #6ee7b7; color: #6ee7b7; }
+.file-label:hover { 
+  border-style: solid; 
+  background: rgba(255, 102, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+}
 
 #playback {
   display: flex;
@@ -112,7 +169,7 @@ input[type="file"] { display: none; }
 #timeline {
   width: 100%;
   margin-top: 8px;
-  accent-color: #6ee7b7;
+  accent-color: var(--orange);
 }
 
 /* Channel list */
@@ -122,6 +179,7 @@ input[type="file"] { display: none; }
   gap: 8px;
   padding: 4px 0;
   font-size: 11px;
+  color: var(--orange);
 }
 .channel-dot {
   width: 8px;
@@ -129,19 +187,20 @@ input[type="file"] { display: none; }
   border-radius: 50%;
   flex-shrink: 0;
 }
-.channel-name { width: 24px; color: #6ee7b7; }
-.channel-octonion { width: 16px; color: #f59e0b; }
-.channel-phase { color: #64748b; font-size: 10px; }
+.channel-name { width: 24px; color: var(--orange); }
+.channel-octonion { width: 16px; color: var(--orange); text-shadow: 0 0 5px rgba(255, 102, 0, 0.5); }
+.channel-phase { color: var(--orange); font-size: 10px; opacity: 0.7; }
 .channel-bar {
   flex: 1;
   height: 4px;
-  background: #1a1a2e;
+  background: #1a1a00;
+  border: 1px solid var(--orange);
   border-radius: 2px;
   overflow: hidden;
 }
 .channel-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: 1px;
   transition: width 0.05s;
 }
 
@@ -149,7 +208,8 @@ input[type="file"] { display: none; }
 #matrix-display {
   font-size: 9px;
   line-height: 1.6;
-  font-family: 'Courier New', monospace;
+  font-family: 'Roboto Condensed', monospace;
+  color: var(--orange);
 }
 #matrix-display table {
   border-collapse: collapse;
@@ -158,15 +218,16 @@ input[type="file"] { display: none; }
 #matrix-display td, #matrix-display th {
   padding: 2px 4px;
   text-align: center;
-  border: 1px solid #1a1a2e;
+  border: 1px solid var(--orange);
 }
 #matrix-display th {
-  color: #6ee7b7;
-  background: #0a0a12;
+  color: var(--orange);
+  background: #000;
+  text-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
 }
 .matrix-cell-active {
-  background: #1a3a2e !important;
-  color: #6ee7b7;
+  background: var(--orange) !important;
+  color: #000 !important;
 }
 
 /* DFT output panel */
@@ -176,19 +237,20 @@ input[type="file"] { display: none; }
   margin-bottom: 2px;
   font-size: 10px;
 }
-.dft-label { width: 16px; color: #f59e0b; }
-.dft-mag { color: #6ee7b7; width: 50px; text-align: right; }
-.dft-phase-val { color: #64748b; width: 60px; text-align: right; }
+.dft-label { width: 16px; color: var(--orange); }
+.dft-mag { color: var(--orange); width: 50px; text-align: right; }
+.dft-phase-val { color: var(--orange); width: 60px; text-align: right; opacity: 0.7; }
 .dft-bar-container {
   flex: 1;
   height: 12px;
-  background: #1a1a2e;
+  background: #1a1a00;
+  border: 1px solid var(--orange);
   border-radius: 2px;
   overflow: hidden;
 }
 .dft-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: 1px;
 }
 
 /* Tunnel diode panel */
@@ -198,21 +260,23 @@ input[type="file"] { display: none; }
   gap: 6px;
   padding: 3px 0;
   font-size: 10px;
+  color: var(--orange);
 }
-.td-channel { width: 14px; color: #f59e0b; font-weight: bold; }
+.td-channel { width: 14px; color: var(--orange); font-weight: bold; text-shadow: 0 0 5px rgba(255, 102, 0, 0.5); }
 .td-z { width: 55px; text-align: right; }
 .td-coherence { width: 45px; text-align: right; }
 .td-z-bar {
   flex: 1;
   height: 8px;
-  background: #1a1a2e;
+  background: #1a1a00;
+  border: 1px solid var(--orange);
   border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 .td-z-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.05s;
 }
 .td-z-zero-line {
@@ -220,24 +284,28 @@ input[type="file"] { display: none; }
   top: 0;
   bottom: 0;
   width: 1px;
-  background: #ef4444;
+  background: var(--red);
   left: 50%;
 }
-.coherence-high { color: #6ee7b7; }
-.coherence-mid { color: #f59e0b; }
-.coherence-low { color: #64748b; }
+.coherence-high { color: var(--orange); text-shadow: 0 0 5px rgba(255, 102, 0, 0.8); }
+.coherence-mid { color: var(--orange); opacity: 0.7; }
+.coherence-low { color: var(--orange); opacity: 0.4; }
 
 /* Info overlay */
 #info-overlay {
   position: absolute;
   top: 12px;
   right: 12px;
-  font-size: 10px;
-  color: #64748b;
+  font-size: 11px;
+  color: var(--orange);
   text-align: right;
   pointer-events: none;
+  text-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
 }
-#info-overlay .value { color: #6ee7b7; }
+#info-overlay .value { 
+  color: var(--orange); 
+  text-shadow: 0 0 5px rgba(255, 102, 0, 0.8);
+}
 
 /* Waveform mini display */
 #waveform-panel {
@@ -248,12 +316,69 @@ input[type="file"] { display: none; }
   width: 100%;
   height: 100%;
 }
+
+/* Input styles */
+input[type="text"], input[type="number"], select {
+  background: #000;
+  border: 2px solid var(--orange);
+  color: var(--orange);
+  padding: 4px 8px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 11px;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+}
+select option {
+  background: #000;
+  color: var(--orange);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--orange);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red);
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.blink {
+  animation: blink 1s infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 102, 0, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 102, 0, 0.9); }
+}
+.glow {
+  animation: glowPulse 2s infinite;
+}
 </style>
 </head>
 <body>
 
 <div id="header">
-  <h1>Octonion EEG Spatializer</h1>
+  <h1>Pocket Dimension Omega</h1>
   <span class="status" id="status-text">No data loaded</span>
 </div>
 
@@ -274,13 +399,13 @@ input[type="file"] { display: none; }
         <button class="btn" id="btn-play">▶</button>
         <button class="btn" id="btn-pause">⏸</button>
         <button class="btn" id="btn-reset">⏮</button>
-        <span style="font-size:10px;color:#64748b;" id="frame-counter">0 / 0</span>
+        <span style="font-size:10px;color:#553300;" id="frame-counter">0 / 0</span>
       </div>
       <input type="range" id="timeline" min="0" max="0" value="0">
       <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
-        <span style="font-size:10px;color:#64748b;">Speed:</span>
-        <input type="range" id="speed-slider" min="1" max="60" value="15" style="flex:1;accent-color:#6ee7b7;">
-        <span style="font-size:10px;color:#6ee7b7;" id="speed-label">15 fps</span>
+        <span style="font-size:10px;color:#553300;">Speed:</span>
+        <input type="range" id="speed-slider" min="1" max="60" value="15" style="flex:1;accent-color:#fa0;">
+        <span style="font-size:10px;color:#fa0;" id="speed-label">15 fps</span>
       </div>
     </div>
 
@@ -294,15 +419,15 @@ input[type="file"] { display: none; }
       </div>
       <div id="ws-config" style="display:none;margin-bottom:6px;">
         <div style="display:flex;gap:4px;align-items:center;">
-          <span style="font-size:10px;color:#64748b;">ws://</span>
-          <input type="text" id="ws-url" value="localhost:8765" style="flex:1;background:#1a1a2e;border:1px solid #2a2a4e;color:#c8d0e0;padding:3px 6px;font-family:'Courier New';font-size:10px;">
+          <span style="font-size:10px;color:#553300;">ws://</span>
+          <input type="text" id="ws-url" value="localhost:8765" style="flex:1;background:#000;border:2px solid #553300;color:#fa0;padding:3px 6px;font-family:'Roboto Condensed';font-size:11px;">
           <button class="btn" id="btn-ws-go" style="padding:3px 8px;">Go</button>
         </div>
       </div>
       <div id="serial-config" style="display:none;margin-bottom:6px;">
         <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
-          <span style="font-size:10px;color:#64748b;">Baud:</span>
-          <select id="serial-baud" style="background:#1a1a2e;border:1px solid #2a2a4e;color:#c8d0e0;padding:2px;font-family:'Courier New';font-size:10px;">
+          <span style="font-size:10px;color:#553300;">Baud:</span>
+          <select id="serial-baud" style="background:#000;border:2px solid #553300;color:#fa0;padding:2px;font-family:'Roboto Condensed';font-size:11px;">
             <option value="9600">9600</option>
             <option value="115200" selected>115200</option>
             <option value="230400">230400</option>
@@ -311,17 +436,17 @@ input[type="file"] { display: none; }
           </select>
           <button class="btn" id="btn-serial-go" style="padding:3px 8px;">Select Port</button>
         </div>
-        <div style="font-size:9px;color:#64748b;margin-top:4px;">
+        <div style="font-size:9px;color:#553300;margin-top:4px;">
           Expects: 8 comma-separated values per line<br>
           e.g. "49271.5,49957.8,49644.2,..."
         </div>
       </div>
-      <div id="rt-status" style="font-size:10px;color:#64748b;">
-        <span id="rt-indicator" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#64748b;margin-right:4px;"></span>
+      <div id="rt-status" style="font-size:10px;color:#553300;">
+        <span id="rt-indicator" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#553300;margin-right:4px;"></span>
         <span id="rt-status-text">Disconnected</span>
         <span id="rt-fps" style="float:right;"></span>
       </div>
-      <div id="rt-buffer-info" style="font-size:9px;color:#64748b;margin-top:2px;display:none;">
+      <div id="rt-buffer-info" style="font-size:9px;color:#553300;margin-top:2px;display:none;">
         Buffer: <span id="rt-buffer-count">0</span> frames |
         Latency: <span id="rt-latency">0</span>ms
       </div>
@@ -329,9 +454,9 @@ input[type="file"] { display: none; }
 
     <!-- Channel mapping (editable) -->
     <div class="panel">
-      <div class="panel-title">Channel Mapping (EEG → Octonion)</div>
+      <div class="panel-title">Channel Mapping (EEG → Matrix)</div>
       <div id="channel-list"></div>
-      <div style="margin-top:6px;font-size:9px;color:#64748b;">
+      <div style="margin-top:6px;font-size:9px;color:#553300;">
         Click angle values to edit. CZ/OZ use Y-axis (zenith/nadir).
       </div>
     </div>
@@ -349,13 +474,13 @@ input[type="file"] { display: none; }
       <div class="panel-title">Tunnel Diode Z-Vector (m, i, k)</div>
       <div id="tunnel-diode-panel"></div>
       <div style="margin-top:6px;">
-        <canvas id="iv-curve-canvas" width="280" height="100" style="width:100%;height:80px;border:1px solid #1a1a2e;border-radius:4px;"></canvas>
+        <canvas id="iv-curve-canvas" width="280" height="100" style="width:100%;height:80px;border:2px solid #553300;border-radius:4px;"></canvas>
       </div>
     </div>
 
-    <!-- Octonion matrix -->
+    <!-- Matrix matrix -->
     <div class="panel">
-      <div class="panel-title">Octonion Cayley Table</div>
+      <div class="panel-title">Matrix Cayley Table</div>
       <div id="matrix-display"></div>
     </div>
 
@@ -370,7 +495,7 @@ input[type="file"] { display: none; }
     <div id="info-overlay">
       <div>Frame: <span class="value" id="ov-frame">—</span></div>
       <div>Channels: <span class="value">8</span></div>
-      <div>Matrix: <span class="value">8×8 Octonion</span></div>
+      <div>Matrix: <span class="value">8×8 Matrix</span></div>
       <div>Z-Vector: <span class="value">m, i, k (TD buffered)</span></div>
       <div>Z Mode: <span class="value" id="ov-zmode">Z → 0</span></div>
     </div>
@@ -382,6 +507,8 @@ input[type="file"] { display: none; }
 // ============================================================
 // OCTONION ALGEBRA ENGINE
 // ============================================================
+var brainMeshData = null; // Define to avoid ReferenceError if script not loaded
+
 const BASIS = ['1', 'i', 'j', 'k', 'l', 'm', 'n', 'o'];
 const BASIS_IDX = {}; BASIS.forEach((b, i) => BASIS_IDX[b] = i);
 
@@ -525,6 +652,7 @@ const TUNNEL_DIODE_PARAMS = {
     'm': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
     'i': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
     'k': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
+    'j': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
   }
 };
 
@@ -642,21 +770,23 @@ function processTunnelDiodeChannel(inputSignal, channelKey, dt) {
 }
 
 // Channels that have tunnel diode modulators
-const TUNNEL_DIODE_CHANNELS = ['m', 'i', 'k'];
+const TUNNEL_DIODE_CHANNELS = ['m', 'i', 'k', 'j'];
 
 // Store latest tunnel diode diagnostics for UI
 let tunnelDiodeDiagnostics = {};
 
-// Channel mapping: EEG electrode → Octonion basis
+// Channel mapping: EEG electrode → Matrix basis
+// 10-20 system positions on a sphere (normalized coordinates)
+// x: left(-) to right(+), y: bottom(-) to top(+), z: back(-) to front(+)
 const CHANNEL_MAP = [
-  { eeg: 'F7', octonion: 'l', csvIdx: 0, angle: 67.5,  gain: 1.2, color: '#ef4444' },
-  { eeg: 'Fpz', octonion: 'o', csvIdx: 1, angle: 337.5, gain: 1.3, color: '#f97316' },
-  { eeg: 'P7', octonion: 'k', csvIdx: 2, angle: 180.0, gain: 0.9, color: '#eab308' },
-  { eeg: 'CZ', octonion: '1', csvIdx: 3, angle: 0,     gain: 1.0, color: '#22c55e' },
-  { eeg: 'F8', octonion: 'n', csvIdx: 4, angle: 315.0, gain: 1.0, color: '#06b6d4' },
-  { eeg: 'PZ', octonion: 'i', csvIdx: 5, angle: 202.5, gain: 1.1, color: '#3b82f6' },
-  { eeg: 'OZ', octonion: 'j', csvIdx: 6, angle: 0,     gain: 0.8, color: '#8b5cf6' },
-  { eeg: 'P8', octonion: 'm', csvIdx: 7, angle: 292.5, gain: 0.7, color: '#ec4899' },
+  { eeg: 'F7', octonion: 'l', csvIdx: 0, angle: 45,    gain: 1.2, color: '#faa800', brainPos: { x: -0.78, y: 0.72, z: 0.52 } },
+  { eeg: 'Fpz', octonion: 'o', csvIdx: 1, angle: 0,     gain: 1.3, color: '#f79502', brainPos: { x: 0,    y: 0.85, z: 0.52 } },
+  { eeg: 'P7', octonion: 'k', csvIdx: 2, angle: 112.5, gain: 0.9, color: '#f18204', brainPos: { x: -0.65, y: -0.15, z: -0.65 } },
+  { eeg: 'CZ', octonion: '1', csvIdx: 3, angle: 0,      gain: 1.0, color: '#e96f04', brainPos: { x: 0,    y: 0.35, z: 0.88 } },
+  { eeg: 'F8', octonion: 'n', csvIdx: 4, angle: 315.0,  gain: 1.0, color: '#e15c04', brainPos: { x: 0.78, y: 0.72, z: 0.52 } },
+  { eeg: 'PZ', octonion: 'i', csvIdx: 5, angle: 180,    gain: 1.1, color: '#d94904', brainPos: { x: 0,    y: -0.05, z: -0.85 } },
+  { eeg: 'OZ', octonion: 'j', csvIdx: 6, angle: 0,      gain: 0.8, color: '#d13604', brainPos: { x: 0,    y: -0.25, z: -0.75 } },
+  { eeg: 'P8', octonion: 'm', csvIdx: 7, angle: 247.5,  gain: 0.7, color: '#c92304', brainPos: { x: 0.65, y: -0.15, z: -0.65 } },
 ];
 
 // ============================================================
@@ -667,6 +797,19 @@ let currentFrame = 0;
 let isPlaying = false;
 let playbackSpeed = 15; // fps
 let lastFrameTime = 0;
+let currentMatrixOutput = null; // Current octonion matrix output for neural network
+let currentChannelProcessed = null; // Current processed channel values for neural network
+
+// Initialize with default values when no data is loaded
+// For neural network: 16 spherical harmonic components (orders 0-3)
+// Order 0: 1 component (W=1)
+// Order 1: 3 components (X,Y,Z)
+// Order 2: 5 components
+// Order 3: 7 components
+// Default state: pure W=1 (no X,Y,Z components)
+currentMatrixOutput = new Array(16).fill(0);
+currentMatrixOutput[0] = 1.0; // W = 1
+currentChannelProcessed = new Array(8).fill(1.0);
 
 function generateDemoData(numFrames = 1349) {
   const data = [];
@@ -779,13 +922,95 @@ function normalizeData(data) {
 // THREE.JS VISUALIZATION
 // ============================================================
 let scene, camera, renderer, controls;
-let channelNodes = [];  // Meshes for each channel
-let channelLabels = []; // Label sprites for each channel
-let channelLines = [];  // Connection lines
-let connectionLines = [];
-let gridHelper;
-let outputNodes = [];   // Meshes for matrix output
-let trailPoints = [];   // Trail history
+let neuralNodesMesh = null;
+let neuralConnectionsMesh = null;
+let neuralNetwork = null;
+let neuralPulseUniforms = null;
+
+// Cayley matrix basis order (from the algebra)
+const BASIS_ELEMENTS = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
+
+// EEG channel to brain region mapping (loaded from JSON)
+const CHANNEL_BRAIN_MAP = {
+  'Fp1': { basis: '1', idx: 0 },
+  'Fp2': { basis: 'm', idx: 1 },
+  'F7':  { basis: 'n', idx: 2 },
+  'F8':  { basis: 'o', idx: 3 },
+  'Cz':  { basis: 'l', idx: 4 },
+  'Pz':  { basis: 'i', idx: 5 },
+  'P7':  { basis: 'j', idx: 6 },
+  'P8':  { basis: 'k', idx: 7 }
+};
+
+async function loadBrainMeshJSON() {
+  // Use embedded brain mesh data (generated from diffusion model)
+  if (typeof brainMeshData !== 'undefined') {
+    console.log('Brain mesh loaded:', brainMeshData.vertices.length, 'vertices,', brainMeshData.faces ? brainMeshData.faces.length : 0, 'faces');
+    console.log('Electrode positions:', Object.keys(brainMeshData.electrodePositions));
+    return brainMeshData;
+  }
+  
+  // Fallback to fetch if embedded data not available
+  try {
+    const response = await fetch('brain_mesh.json');
+    const data = await response.json();
+    console.log('Brain mesh loaded:', data.electrodePositions);
+    return data;
+  } catch (e) {
+    console.warn('Could not load brain_mesh.json, using procedural brain:', e);
+    return null;
+  }
+}
+
+function createBrainMeshFromJSON(data, scale = 7) {
+  if (!data) return null;
+  
+  const vertices = [];
+  for (let i = 0; i < data.vertices.length; i += 3) {
+    vertices.push(new THREE.Vector3(
+      data.vertices[i] * scale,
+      data.vertices[i + 1] * scale,
+      data.vertices[i + 2] * scale
+    ));
+  }
+  
+  const indices = [];
+  for (let i = 0; i < data.faces.length; i += 3) {
+    indices.push(data.faces[i], data.faces[i + 1], data.faces[i + 2]);
+  }
+  
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(
+    vertices.flatMap(v => [v.x, v.y, v.z]), 3
+  ));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  
+  return geometry;
+}
+
+function createCayleyConnections(data, scale = 7) {
+  if (!data || !data.cayleyConnections) return null;
+  
+  const connections = [];
+  const electrodePos = data.electrodePositions;
+  
+  data.cayleyConnections.forEach(conn => {
+    const [from, to, resultBasis] = conn;
+    if (electrodePos[from] && electrodePos[to]) {
+      const fromPos = electrodePos[from].pos;
+      const toPos = electrodePos[to].pos;
+      
+      connections.push({
+        from: new THREE.Vector3(fromPos[0] * scale, fromPos[1] * scale, fromPos[2] * scale),
+        to: new THREE.Vector3(toPos[0] * scale, toPos[1] * scale, toPos[2] * scale),
+        basis: resultBasis
+      });
+    }
+  });
+  
+  return connections;
+}
 
 function initThree() {
   const container = document.getElementById('viewport');
@@ -793,11 +1018,11 @@ function initThree() {
   const h = container.clientHeight;
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0a0f);
-  scene.fog = new THREE.FogExp2(0x0a0a0f, 0.015);
+  scene.background = new THREE.Color(0x1a1a22);
+  scene.fog = new THREE.FogExp2(0x000000, 0.012);
 
   camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
-  camera.position.set(0, 8, 12);
+  camera.position.set(0, 5, 10);
   camera.lookAt(0, 0, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -806,126 +1031,21 @@ function initThree() {
   container.appendChild(renderer.domElement);
 
   // Lights
-  const ambientLight = new THREE.AmbientLight(0x334455, 0.6);
+  const ambientLight = new THREE.AmbientLight(0x332200, 0.8);
   scene.add(ambientLight);
+  
   const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
   dirLight.position.set(5, 10, 5);
   scene.add(dirLight);
-  const pointLight = new THREE.PointLight(0x6ee7b7, 1, 30);
+  
+  const pointLight = new THREE.PointLight(0xfa0, 1.5, 50);
   pointLight.position.set(0, 5, 0);
   scene.add(pointLight);
 
-  // Grid
-  gridHelper = new THREE.GridHelper(20, 20, 0x1a1a2e, 0x0d0d14);
-  gridHelper.position.y = -2;
-  scene.add(gridHelper);
+  // Create neural network visualization (no brain mesh)
+  createNeuralVisualization();
 
-  // Center reference
-  const centerGeo = new THREE.SphereGeometry(0.15, 16, 16);
-  const centerMat = new THREE.MeshPhongMaterial({ color: 0x6ee7b7, emissive: 0x2a5a4a, transparent: true, opacity: 0.7 });
-  const centerSphere = new THREE.Mesh(centerGeo, centerMat);
-  scene.add(centerSphere);
-
-  // Create channel nodes (input ring)
-  // CZ (row 1, Zenith) is directly above center
-  // OZ (row j, Nadir) is directly below center
-  // Other channels are on the horizontal ring at their phase angles
-  const inputRadius = 4;
-  const zenithY = 3.5;   // CZ above center
-  const nadirY = -3.5;   // OZ below center
-  CHANNEL_MAP.forEach((ch, idx) => {
-    let x, y, z;
-    if (ch.octonion === '1') {
-      // CZ = Zenith: directly above center
-      x = 0; y = zenithY; z = 0;
-    } else if (ch.octonion === 'j') {
-      // OZ = Nadir: directly below center
-      x = 0; y = nadirY; z = 0;
-    } else {
-      // All other channels on horizontal ring at their phase angles
-      const angle = (ch.angle * Math.PI) / 180;
-      x = inputRadius * Math.cos(angle);
-      y = 0;
-      z = inputRadius * Math.sin(angle);
-    }
-
-    // Sphere for channel (octahedron for TD-buffered Z-vector channels)
-    const isTD = TUNNEL_DIODE_CHANNELS.includes(ch.octonion);
-    const geo = isTD
-      ? new THREE.OctahedronGeometry(0.3, 0)
-      : new THREE.SphereGeometry(0.25, 16, 16);
-    const mat = new THREE.MeshPhongMaterial({
-      color: new THREE.Color(ch.color),
-      emissive: new THREE.Color(ch.color).multiplyScalar(0.3),
-      transparent: true,
-      opacity: 0.9,
-      wireframe: isTD // Wireframe for TD channels
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(x, y, z);
-    mesh.userData = { baseY: y, channel: ch, isTunnelDiode: isTD };
-    scene.add(mesh);
-    channelNodes.push(mesh);
-
-    // Add glow ring for TD channels
-    if (isTD) {
-      const ringGeo = new THREE.RingGeometry(0.35, 0.45, 16);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: 0x6ee7b7,
-        transparent: true,
-        opacity: 0.3,
-        side: THREE.DoubleSide
-      });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.position.set(x, y, z);
-      ring.rotation.x = Math.PI / 2;
-      ring.userData = { tdRing: true, channelKey: ch.octonion };
-      scene.add(ring);
-    }
-
-    // Label sprite
-    const label = createTextSprite(ch.eeg + ' [' + ch.octonion + ']', ch.color);
-    label.position.set(x, y + 0.6, z);
-    scene.add(label);
-    channelLabels.push(label);
-
-    // Line from center to node
-    const lineGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(x, y, z)
-    ]);
-    const lineMat = new THREE.LineBasicMaterial({ color: new THREE.Color(ch.color), transparent: true, opacity: 0.3 });
-    const line = new THREE.Line(lineGeo, lineMat);
-    scene.add(line);
-    connectionLines.push(line);
-  });
-
-  // Create output nodes (outer ring)
-  const outputRadius = 7;
-  BASIS.forEach((b, idx) => {
-    const phaseAngle = (PHASE_ANGLES[b] * Math.PI) / 180;
-    const x = outputRadius * Math.cos(phaseAngle);
-    const z = outputRadius * Math.sin(phaseAngle);
-
-    const geo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-    const mat = new THREE.MeshPhongMaterial({
-      color: 0x334455,
-      emissive: 0x112233,
-      transparent: true,
-      opacity: 0.6
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(x, -1, z);
-    mesh.userData = { baseY: -1, basis: b };
-    scene.add(mesh);
-    outputNodes.push(mesh);
-
-    const label = createTextSprite('OUT:' + b, '#64748b');
-    label.position.set(x, -0.3, z);
-    scene.add(label);
-  });
-
-  // Mouse orbit control (simple)
+  // Mouse orbit control
   setupOrbitControls(container);
 
   window.addEventListener('resize', () => {
@@ -935,6 +1055,612 @@ function initThree() {
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
   });
+}
+
+// ============================================================
+// BRAIN WIREFRAME VISUALIZATION
+// ============================================================
+let brainMesh = null;
+let brainWireframe = null;
+let prevChannelVals = new Array(8).fill(1.0);
+
+// Brain dimensions - 0.7071 of visualization area (~7 units radius)
+// Keep above floor (y > -2)
+const BRAIN_SCALE = 7.0;
+const BRAIN_RADIUS_X = 1.0 * BRAIN_SCALE;
+const BRAIN_RADIUS_Y = 1.2 * BRAIN_SCALE;
+const BRAIN_RADIUS_Z = 1.0 * BRAIN_SCALE;
+
+function createBrainModel() {
+  // Remove existing
+  if (brainMesh) { scene.remove(brainMesh); brainMesh.geometry.dispose(); brainMesh.material.dispose(); }
+  if (brainWireframe) { scene.remove(brainWireframe); brainWireframe.geometry.dispose(); brainWireframe.material.dispose(); }
+
+  // Use loaded brain mesh JSON data
+  let brainGeo;
+  let cayleyConnections = null;
+  
+  if (brainMeshData && brainMeshData.vertices && brainMeshData.vertices.length > 0) {
+    const positions = [];
+    // Handle both flat array and nested array formats
+    if (typeof brainMeshData.vertices[0] === 'number') {
+      // Flat array - just scale by 7
+      for (let i = 0; i < brainMeshData.vertices.length; i += 3) {
+        positions.push(brainMeshData.vertices[i] * 7, brainMeshData.vertices[i+1] * 7, brainMeshData.vertices[i+2] * 7);
+      }
+    } else {
+      // Nested array [[x,y,z],...]
+      brainMeshData.vertices.forEach(v => {
+        positions.push(v[0] * 7, v[1] * 7, v[2] * 7);
+      });
+    }
+    
+    const indices = [];
+    if (brainMeshData.faces) {
+      brainMeshData.faces.forEach(f => {
+        if (f.length >= 3) {
+          indices.push(f[0], f[1], f[2]);
+        }
+      });
+    }
+    
+    brainGeo = new THREE.BufferGeometry();
+    brainGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    if (indices.length > 0) {
+      brainGeo.setIndex(indices);
+    }
+    brainGeo.computeVertexNormals();
+    
+    console.log('Created brain geometry:', positions.length / 3, 'vertices');
+  }
+  // Fallback if no data
+  if (!brainGeo) {
+    brainGeo = new THREE.SphereGeometry(7, 32, 24);
+  }
+  
+  // Create orange wireframe
+  const wireGeo = new THREE.WireframeGeometry(brainGeo);
+  const wireMat = new THREE.LineBasicMaterial({ color: 0xfa0, transparent: true, opacity: 0.2 });
+  brainWireframe = new THREE.LineSegments(wireGeo, wireMat);
+  scene.add(brainWireframe);
+  console.log('Created wireframe');
+}
+
+// ============================================================
+// NEURAL NETWORK VISUALIZATION
+// ============================================================
+let neuralPulseData = {
+  positions: [],
+  times: [],
+  amplitudes: [],
+  directions: []
+};
+
+const MAX_PULSES = 8;
+
+function createNeuralNetworkInsideBrain() {
+  // Remove existing
+  if (neuralNodesMesh) { scene.remove(neuralNodesMesh); neuralNodesMesh.geometry.dispose(); neuralNodesMesh.material.dispose(); }
+  if (neuralConnectionsMesh) { scene.remove(neuralConnectionsMesh); neuralConnectionsMesh.geometry.dispose(); neuralConnectionsMesh.material.dispose(); }
+  
+  // Get brain mesh vertices for distribution
+  let brainVerts = [];
+  if (brainMeshData && brainMeshData.vertices) {
+    const vertCount = typeof brainMeshData.vertices[0] === 'number' ? brainMeshData.vertices.length / 3 : brainMeshData.vertices.length;
+    for (let i = 0; i < vertCount; i++) {
+      let x, y, z;
+      if (typeof brainMeshData.vertices[0] === 'number') {
+        x = brainMeshData.vertices[i*3] || 0;
+        y = brainMeshData.vertices[i*3+1] || 0;
+        z = brainMeshData.vertices[i*3+2] || 0;
+      } else {
+        x = brainMeshData.vertices[i][0] || 0;
+        y = brainMeshData.vertices[i][1] || 0;
+        z = brainMeshData.vertices[i][2] || 0;
+      }
+      brainVerts.push({x: x * 5, y: y * 5, z: z * 5});
+    }
+  }
+  
+  // Fallback sphere vertices
+  if (brainVerts.length < 100) {
+    const numVerts = 1326;
+    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+    for (let i = 0; i < numVerts; i++) {
+      const phi = Math.acos(1 - 2 * (i + 0.5) / numVerts);
+      const theta = 2 * Math.PI * i / goldenRatio;
+      const r = 4;
+      brainVerts.push({
+        x: r * Math.sin(phi) * Math.cos(theta),
+        y: r * Math.cos(phi),
+        z: r * Math.sin(phi) * Math.sin(theta)
+      });
+    }
+  }
+  
+  // === SPHERICAL HARMONIC NODE POSITIONING ===
+  // 4 layers: n=0 (1), n=1 (3), n=2 (5), n=3 (7) = 16 total nodes
+  const nodes = [];
+  const nodeRadius = 4;
+  
+  // Spherical harmonic Y(n,m) formulas
+  // a = azimuthal angle (0 to 2π), e = elevation angle (0=equator to π/2=pole)
+  function sphericalHarmonic(n, m, a, e) {
+    // Convert to standard spherical coordinates
+    const sinE = Math.sin(e);
+    const cosE = Math.cos(e);
+    const sinA = Math.sin(a);
+    const cosA = Math.cos(a);
+    
+    switch(n) {
+      case 0: return 1; // Y(0,0)
+      case 1:
+        switch(m) {
+          case -1: return sinA * cosE; // Y(1,-1) = sin(a)*cos(e)
+          case 0: return sinE;         // Y(1,0) = sin(e)
+          case 1: return cosA * cosE;  // Y(1,1) = cos(a)*cos(e)
+        }
+      case 2:
+        switch(m) {
+          case -2: return Math.sqrt(3/4) * sin(2*a) * cosE * cosE; // Y(2,-2)
+          case -1: return Math.sqrt(3/4) * sinA * sin(2*e);         // Y(2,-1)
+          case 0: return 0.5 * (3 * sinE * sinE - 1);               // Y(2,0)
+          case 1: return Math.sqrt(3/4) * cosA * sin(2*e);          // Y(2,1)
+          case 2: return Math.sqrt(3/4) * cos(2*a) * cosE * cosE;   // Y(2,2)
+        }
+      case 3:
+        switch(m) {
+          case -3: return Math.sqrt(5/8) * sin(3*a) * cosE * cosE * cosE;      // Y(3,-3)
+          case -2: return Math.sqrt(15/4) * sin(2*a) * sinE * cosE * cosE;    // Y(3,-2)
+          case -1: return Math.sqrt(3/8) * sinA * cosE * (5 * sinE * sinE - 1); // Y(3,-1)
+          case 0: return 0.5 * sinE * (5 * sinE * sinE - 3);                  // Y(3,0)
+          case 1: return Math.sqrt(3/8) * cosA * cosE * (5 * sinE * sinE - 1); // Y(3,1)
+          case 2: return Math.sqrt(15/4) * cos(2*a) * sinE * cosE * cosE;    // Y(3,2)
+          case 3: return Math.sqrt(5/8) * cos(3*a) * cosE * cosE * cosE;      // Y(3,3)
+        }
+    }
+    return 0;
+  }
+  
+  // Generate 16 spherical harmonic nodes
+  const harmonicNodes = []; // {n, m, basisIdx, pos}
+  
+  // Layer n=0 (l=0): 1 node
+  harmonicNodes.push({n: 0, m: 0, basisIdx: 0, name: 'W'});
+  
+  // Layer n=1 (l=-1,0,1): 3 nodes
+  harmonicNodes.push({n: 1, m: -1, basisIdx: 1, name: 'Y'});
+  harmonicNodes.push({n: 1, m: 0, basisIdx: 2, name: 'Z'});
+  harmonicNodes.push({n: 1, m: 1, basisIdx: 3, name: 'X'});
+  
+  // Layer n=2 (l=-2,-1,0,1,2): 5 nodes
+  harmonicNodes.push({n: 2, m: -2, basisIdx: 4, name: 'V'});
+  harmonicNodes.push({n: 2, m: -1, basisIdx: 5, name: 'T'});
+  harmonicNodes.push({n: 2, m: 0, basisIdx: 6, name: 'R'});
+  harmonicNodes.push({n: 2, m: 1, basisIdx: 7, name: 'S'});
+  harmonicNodes.push({n: 2, m: 2, basisIdx: 8, name: 'U'});
+  
+  // Layer n=3 (l=-3,-2,-1,0,1,2,3): 7 nodes
+  harmonicNodes.push({n: 3, m: -3, basisIdx: 9, name: 'Q'});
+  harmonicNodes.push({n: 3, m: -2, basisIdx: 10, name: 'O'});
+  harmonicNodes.push({n: 3, m: -1, basisIdx: 11, name: 'M'});
+  harmonicNodes.push({n: 3, m: 0, basisIdx: 12, name: 'K'});
+  harmonicNodes.push({n: 3, m: 1, basisIdx: 13, name: 'L'});
+  harmonicNodes.push({n: 3, m: 2, basisIdx: 14, name: 'N'});
+  harmonicNodes.push({n: 3, m: 3, basisIdx: 15, name: 'P'});
+  
+  // Position nodes using brain mesh geodesics
+  harmonicNodes.forEach((hn, idx) => {
+    // Distribute based on spherical harmonic order
+    const vertIdx = Math.floor((idx / 16) * brainVerts.length);
+    const bv = brainVerts[vertIdx] || {x: 0, y: 0, z: 0};
+    
+    // Calculate spherical harmonic value for positioning
+    const azimuthal = (hn.m + hn.n) * Math.PI / (hn.n + 1); // Spread evenly in azimuth
+    const elevation = hn.m * Math.PI / (2 * hn.n + 2) + Math.PI / 4; // Spread in elevation
+    
+    const shValue = sphericalHarmonic(hn.n, hn.m, azimuthal, elevation);
+    const r = nodeRadius * (0.5 + Math.abs(shValue) * 0.5);
+    
+    // Position on sphere with brain mesh influence
+    const x = r * Math.sin(elevation) * Math.cos(azimuthal);
+    const y = r * Math.cos(elevation);
+    const z = r * Math.sin(elevation) * Math.sin(azimuthal);
+    
+    // Blend with brain mesh vertex
+    const brainBlend = 0.3;
+    const finalX = x * (1 - brainBlend) + bv.x * brainBlend;
+    const finalY = y * (1 - brainBlend) + bv.y * brainBlend;
+    const finalZ = z * (1 - brainBlend) + bv.z * brainBlend;
+    
+    hn.pos = new THREE.Vector3(finalX, finalY, finalZ);
+    hn.azimuthal = azimuthal;
+    hn.elevation = elevation;
+    nodes.push(hn);
+  });
+  
+  // === CAYLEY MATRIX SUMMING ===
+  // Create connections based on Cayley table - each node sums from lower layer nodes
+  const connections = [];
+  
+  // Cayley multiplication results for each harmonic
+  const cayleyResults = {}; // Maps (fromBasis, toBasis) -> {sign, resultBasis}
+  
+  // Process Cayley table for spherical harmonics
+  for (let fromIdx = 0; fromIdx < nodes.length; fromIdx++) {
+    for (let toIdx = 0; toIdx < nodes.length; toIdx++) {
+      const fromNode = nodes[fromIdx];
+      const toNode = nodes[toIdx];
+      
+      // Sum contributions from lower n to higher n
+      if (fromNode.n < toNode.n) {
+        // Calculate Cayley product sign based on basis indices
+        const fromBasis = fromNode.basisIdx;
+        const toBasis = toNode.basisIdx;
+        
+        // XOR-based polarity (simplified Cayley)
+        const polarity = ((fromBasis & toBasis) % 2 === 0) ? 1 : -1;
+        
+        connections.push({
+          from: fromNode,
+          to: toNode,
+          fromIdx: fromIdx,
+          toIdx: toIdx,
+          polarity: polarity,
+          strength: polarity > 0 ? 1.0 : 0.3
+        });
+      }
+    }
+  }
+  
+  // Store node data
+  const nodePositions = [];
+  const nodeLevels = [];
+  const nodeSizes = [];
+  const nodeBasisIdx = [];
+  const nodeHarmonicN = [];
+  const nodeHarmonicM = [];
+  
+  nodes.forEach(node => {
+    nodePositions.push(node.pos.x, node.pos.y, node.pos.z);
+    nodeLevels.push(node.n / 3); // Normalize layer 0-1
+    nodeBasisIdx.push(node.basisIdx);
+    nodeHarmonicN.push(node.n);
+    nodeHarmonicM.push(node.m);
+    
+    // Size: center (n=0) largest, outer layers smaller
+    const baseSize = node.n === 0 ? 1.5 : (1.2 - node.n * 0.2);
+    nodeSizes.push(baseSize);
+  });
+  
+  const nodeGeo = new THREE.BufferGeometry();
+  nodeGeo.setAttribute('position', new THREE.Float32BufferAttribute(nodePositions, 3));
+  nodeGeo.setAttribute('level', new THREE.Float32BufferAttribute(nodeLevels, 1));
+  nodeGeo.setAttribute('basisIdx', new THREE.Float32BufferAttribute(nodeBasisIdx, 1));
+  nodeGeo.setAttribute('harmonicN', new THREE.Float32BufferAttribute(nodeHarmonicN, 1));
+  nodeGeo.setAttribute('harmonicM', new THREE.Float32BufferAttribute(nodeHarmonicM, 1));
+  nodeGeo.setAttribute('size', new THREE.Float32BufferAttribute(nodeSizes, 1));
+  
+  // Create connection geometry
+  const connectionPositions = [];
+  const connectionStrengths = [];
+  const connectionPolarity = [];
+  const connectionFromIdx = [];
+  const connectionToIdx = [];
+  
+  for (let i = 0; i < connections.length; i++) {
+    const conn = connections[i];
+    connectionPositions.push(
+      conn.from.pos.x, conn.from.pos.y, conn.from.pos.z,
+      conn.to.pos.x, conn.to.pos.y, conn.to.pos.z
+    );
+    connectionStrengths.push(conn.strength, conn.strength);
+    connectionPolarity.push(conn.polarity > 0 ? 1.0 : 0.0, conn.polarity > 0 ? 1.0 : 0.0);
+    connectionFromIdx.push(conn.fromIdx, conn.fromIdx);
+    connectionToIdx.push(conn.toIdx, conn.toIdx);
+  }
+  
+  const connectionsGeo = new THREE.BufferGeometry();
+  connectionsGeo.setAttribute('position', new THREE.Float32BufferAttribute(connectionPositions, 3));
+  connectionsGeo.setAttribute('strength', new THREE.Float32BufferAttribute(connectionStrengths, 1));
+  connectionsGeo.setAttribute('polarity', new THREE.Float32BufferAttribute(connectionPolarity, 1));
+  connectionsGeo.setAttribute('fromIdx', new THREE.Float32BufferAttribute(connectionFromIdx, 1));
+  connectionsGeo.setAttribute('toIdx', new THREE.Float32BufferAttribute(connectionToIdx, 1));
+  
+  // Create shaders
+  const connectionsMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uMatrixOutput: { value: new Array(16).fill(0) }
+    },
+    vertexShader: `
+      attribute float strength;
+      attribute float polarity;
+      attribute float fromIdx;
+      attribute float toIdx;
+      varying float vStrength;
+      varying float vPolarity;
+      varying float vFromIdx;
+      varying float vToIdx;
+      varying vec3 vPosition;
+      
+      void main() {
+        vStrength = strength;
+        vPolarity = polarity;
+        vFromIdx = fromIdx;
+        vToIdx = toIdx;
+        vPosition = position;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform float uMatrixOutput[16];
+      varying float vStrength;
+      varying float vPolarity;
+      varying float vFromIdx;
+      varying float vToIdx;
+      varying vec3 vPosition;
+      
+      void main() {
+        // Get input from fromIdx
+        int fi = int(vFromIdx);
+        float inputVal = uMatrixOutput[fi];
+        
+        // Apply polarity
+        if (vPolarity < 0.5) {
+          inputVal = -inputVal;
+        }
+        
+        float amplitude = abs(inputVal);
+        
+        // Color: black=low, green=Z→0, red=negative, orange=positive
+        vec3 color = vec3(0.0);
+        
+        if (amplitude < 0.05) {
+          float t = amplitude / 0.05;
+          color = mix(vec3(0.0, 1.0, 0.5), vec3(0.0), t);
+        } else if (inputVal < 0.0) {
+          color = vec3(1.0, 0.0, 0.0);
+        } else {
+          color = vec3(1.0, 0.4, 0.0);
+        }
+        
+        color *= (0.3 + amplitude * 0.7);
+        float alpha = vStrength * 0.5;
+        
+        gl_FragColor = vec4(color, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  
+  neuralConnectionsMesh = new THREE.LineSegments(connectionsGeo, connectionsMat);
+  scene.add(neuralConnectionsMesh);
+  
+  console.log('Spherical harmonic network:', nodes.length, 'nodes,', connections.length, 'connections');
+  
+  // Node shader
+  const neuralNodeShader = {
+    uniforms: {
+      uTime: { value: 0 },
+      uMatrixOutput: { value: new Array(16).fill(0) }
+    },
+    vertexShader: `
+      attribute float size;
+      attribute float level;
+      attribute float basisIdx;
+      attribute float harmonicN;
+      attribute float harmonicM;
+      varying float vSize;
+      varying float vLevel;
+      varying float vBasisIdx;
+      varying float vHarmonicN;
+      varying vec3 vPosition;
+      
+      void main() {
+        vSize = size;
+        vLevel = level;
+        vBasisIdx = basisIdx;
+        vHarmonicN = harmonicN;
+        vPosition = position;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size * (300.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform float uMatrixOutput[16];
+      
+      varying float vSize;
+      varying float vLevel;
+      varying float vBasisIdx;
+      varying float vHarmonicN;
+      varying vec3 vPosition;
+      
+      void main() {
+        // Get matrix output for this node
+        int idx = int(clamp(vBasisIdx, 0.0, 15.0));
+        float matrixVal = uMatrixOutput[idx];
+        float amplitude = abs(matrixVal);
+        
+        // Color: black=lowest, green=Z→0, red=negative, orange=positive
+        vec3 baseColor = vec3(0.0);
+        
+        if (amplitude < 0.05) {
+          float t = amplitude / 0.05;
+          baseColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.0), t);
+        } else if (matrixVal < 0.0) {
+          baseColor = vec3(1.0, 0.0, 0.0);
+        } else {
+          baseColor = vec3(1.0, 0.4, 0.0);
+        }
+        
+        // Boost based on layer (outer layers more visible)
+        baseColor *= (0.3 + vHarmonicN * 0.2 + amplitude * 0.5);
+        
+        // Circle shape
+        vec2 center = gl_PointCoord - 0.5;
+        float dist = length(center);
+        if (dist > 0.5) discard;
+        
+        float alpha = (1.0 - smoothstep(0.0, 0.5, dist));
+        
+        gl_FragColor = vec4(baseColor, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  };
+  
+  const nodeMat = new THREE.ShaderMaterial(neuralNodeShader);
+  
+  neuralNodesMesh = new THREE.Points(nodeGeo, nodeMat);
+  scene.add(neuralNodesMesh);
+}
+
+function getPhaseDirection(channelIdx) {
+  const ch = CHANNEL_MAP[channelIdx];
+  if (!ch) return new THREE.Vector3(0, 1, 0);
+  
+  const angle = ch.angle * Math.PI / 180;
+  const yAngle = (ch.yAngle || 0) * Math.PI / 180;
+  
+  // Convert spherical to cartesian
+  const x = Math.cos(angle) * Math.cos(yAngle);
+  const y = Math.sin(yAngle);
+  const z = Math.sin(angle) * Math.cos(yAngle);
+  
+  return new THREE.Vector3(x, y, z).normalize();
+}
+
+// Initialize pulse data
+function initNeuralPulseData() {
+  neuralPulseData = {
+    positions: [],
+    times: [],
+    amplitudes: [],
+    directions: []
+  };
+}
+
+function createNeuralVisualization() {
+  createNeuralNetworkInsideBrain();
+  initNeuralPulseData();
+}
+
+// Update neural pulses - propagate from center along phase directions to surface
+let lastPulseTime = 0;
+
+function updateNeuralPulses(time, channelProcessedVals) {
+  if (!channelProcessedVals) return;
+  
+  // Calculate activity
+  const totalActivity = channelProcessedVals.reduce((a, b) => a + Math.abs(b - 1.0), 0) / 8;
+  
+  // Spawn new pulses based on signal activity
+  const pulseInterval = 0.15; // seconds between pulses
+  if (time - lastPulseTime > pulseInterval && totalActivity > 0.02) {
+    // Spawn pulse for each active channel
+    channelProcessedVals.forEach((val, idx) => {
+      const deviation = val - 1.0;
+      if (Math.abs(deviation) > 0.05) {
+        const direction = getPhaseDirection(idx);
+        
+        // Add pulse
+        neuralPulseData.positions.push(new THREE.Vector3(0, 0, 0));
+        neuralPulseData.times.push(time);
+        neuralPulseData.amplitudes.push(deviation);
+        neuralPulseData.directions.push(direction);
+        
+        // Limit number of pulses
+        if (neuralPulseData.positions.length > MAX_PULSES * 8) {
+          neuralPulseData.positions.shift();
+          neuralPulseData.times.shift();
+          neuralPulseData.amplitudes.shift();
+          neuralPulseData.directions.shift();
+        }
+      }
+    });
+    lastPulseTime = time;
+  }
+  
+  // Update brain surface glow based on matrix output
+  updateBrainSurfaceGlow(time, currentMatrixOutput);
+}
+
+// Surface glow effect on brain mesh - driven by Cayley matrix row outputs
+function updateBrainSurfaceGlow(time, matrixOutput) {
+  if (!brainMesh || !brainMesh.material.uniforms) return;
+  
+  const uniforms = brainMesh.material.uniforms;
+  
+  // Reset glow
+  uniforms.uGlowIntensity.value = 0;
+  uniforms.uGlowPosition.value.set(0, -100, 0);
+  
+  // Use matrix output directly to drive surface reactions
+  // Rows: 1, i, j, k, l, m, n, o map to directions on sphere surface
+  if (!matrixOutput || matrixOutput.length < 8) return;
+  
+  const surfaceRadius = 6.5;
+  let totalIntensity = 0;
+  let weightedPos = new THREE.Vector3();
+  
+  // Cayley row basis elements mapped to spherical directions
+  const rowBasisDirs = [
+    { basis: '1', dir: new THREE.Vector3(0, 1, 0) },    // Top
+    { basis: 'i', dir: new THREE.Vector3(0, -0.5, 0.866) },  // Front
+    { basis: 'j', dir: new THREE.Vector3(0, -0.5, -0.866) }, // Back
+    { basis: 'k', dir: new THREE.Vector3(0.866, -0.5, 0) },  // Right
+    { basis: 'l', dir: new THREE.Vector3(-0.866, -0.5, 0) }, // Left
+    { basis: 'm', dir: new THREE.Vector3(0.5, 0.5, 0.5) },  // Diagonal
+    { basis: 'n', dir: new THREE.Vector3(-0.5, 0.5, 0.5) },
+    { basis: 'o', dir: new THREE.Vector3(0.5, 0.5, -0.5) }
+  ];
+  
+  for (let row = 0; row < 8; row++) {
+    const val = matrixOutput[row];
+    if (val > 0) { // Only positive outputs
+      const intensity = Math.min(val * 0.5, 1);
+      totalIntensity += intensity;
+      
+      const dir = rowBasisDirs[row].dir.normalize().multiplyScalar(surfaceRadius);
+      weightedPos.add(dir.multiplyScalar(intensity));
+    }
+  }
+  
+  // Normalize position
+  if (totalIntensity > 0.01) {
+    weightedPos.divideScalar(totalIntensity);
+    const finalIntensity = Math.min(totalIntensity, 1);
+    uniforms.uGlowIntensity.value = finalIntensity;
+    uniforms.uGlowPosition.value.copy(weightedPos);
+  }
+}
+
+function updateBrainVisualization(time, channelProcessedVals, matrixOutput) {
+  // Calculate signal activity
+  const inputActivity = channelProcessedVals ? channelProcessedVals.reduce((a, b) => a + Math.abs(b - 1.0), 0) / 8 : 0;
+  const outputActivity = matrixOutput ? Math.abs(matrixOutput.reduce((a, b) => a + b, 0) / 8) : 0;
+  const totalActivity = Math.min(inputActivity + outputActivity, 1);
+  
+  // Gentle rotation like neuralsim.html (sin(t * 0.04) * 0.05)
+  const rotationY = Math.sin(time * 0.04) * 0.05;
+  if (brainWireframe) {
+    brainWireframe.rotation.y = rotationY;
+  }
+  if (neuralNodesMesh) {
+    neuralNodesMesh.rotation.y = rotationY;
+  }
+  if (neuralConnectionsMesh) {
+    neuralConnectionsMesh.rotation.y = rotationY;
+  }
 }
 
 function createTextSprite(text, color) {
@@ -1000,42 +1726,38 @@ function buildChannelList() {
   CHANNEL_MAP.forEach((ch, idx) => {
     const row = document.createElement('div');
     row.className = 'channel-row';
-    const isAxis = (ch.octonion === '1' || ch.octonion === 'j');
     row.innerHTML = `
       <span class="channel-dot" style="background:${ch.color}"></span>
       <span class="channel-name">${ch.eeg}</span>
       <span class="channel-octonion">${ch.octonion}</span>
       <input type="number" class="phase-input" id="phase-${idx}"
         value="${ch.angle}" min="0" max="360" step="0.5"
-        ${isAxis ? 'disabled title="CZ/OZ on Y-axis"' : ''}
-        style="width:52px;background:${isAxis ? '#0d0d14' : '#1a1a2e'};border:1px solid #2a2a4e;color:${isAxis ? '#64748b' : '#6ee7b7'};padding:1px 4px;font-family:'Courier New';font-size:10px;text-align:right;">
-      <span style="font-size:9px;color:#64748b;">°</span>
+        style="width:52px;background:#000;border:1px solid #fa0;color:#fa0;padding:1px 4px;font-family:'Roboto Condensed';font-size:10px;text-align:right;">
+      <span style="font-size:9px;color:#553300;">°</span>
       <div class="channel-bar">
         <div class="channel-bar-fill" id="chbar-${idx}" style="width:50%;background:${ch.color}"></div>
       </div>
     `;
     container.appendChild(row);
 
-    // Wire up live editing
-    if (!isAxis) {
-      const input = row.querySelector('.phase-input');
-      input.addEventListener('change', () => {
+    // Wire up live editing for all channels
+    const input = row.querySelector('.phase-input');
+    input.addEventListener('change', () => {
+      const newAngle = parseFloat(input.value) || 0;
+      ch.angle = newAngle;
+      PHASE_ANGLES[ch.octonion] = newAngle;
+      repositionChannelNode(idx);
+    });
+    // Also update on Enter key
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        input.blur();
         const newAngle = parseFloat(input.value) || 0;
         ch.angle = newAngle;
         PHASE_ANGLES[ch.octonion] = newAngle;
         repositionChannelNode(idx);
-      });
-      // Also update on Enter key
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          input.blur();
-          const newAngle = parseFloat(input.value) || 0;
-          ch.angle = newAngle;
-          PHASE_ANGLES[ch.octonion] = newAngle;
-          repositionChannelNode(idx);
-        }
-      });
-    }
+      }
+    });
   });
 }
 
@@ -1093,13 +1815,18 @@ function repositionAllNodes() {
 
 function buildMatrixDisplay() {
   const container = document.getElementById('matrix-display');
+  const displayColOrder = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
   let html = '<table><tr><th>×</th>';
-  BASIS.forEach(b => html += `<th>${b}</th>`);
+  displayColOrder.forEach(b => html += `<th>${b}</th>`);
   html += '</tr>';
   for (let r = 0; r < 8; r++) {
     html += `<tr><th>${BASIS[r]}</th>`;
     for (let c = 0; c < 8; c++) {
-      html += `<td id="mcell-${r}-${c}">${CAYLEY[r][c]}</td>`;
+      const colBasis = displayColOrder[c];
+      const ci = BASIS_IDX[colBasis];
+      const val = CAYLEY[r][ci];
+      const negClass = val.startsWith('-') ? 'style="background:#1a0500;color:#c92304;"' : '';
+      html += `<td id="mcell-${r}-${c}" ${negClass}>${val}</td>`;
     }
     html += '</tr>';
   }
@@ -1110,7 +1837,7 @@ function buildMatrixDisplay() {
 function buildDFTOutput() {
   const container = document.getElementById('dft-output');
   container.innerHTML = '';
-  const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+  const colors = ['#faa800', '#f79502', '#f18204', '#e96f04', '#e15c04', '#d94904', '#d13604', '#c92304'];
   BASIS.forEach((b, idx) => {
     const row = document.createElement('div');
     row.className = 'dft-row';
@@ -1138,7 +1865,7 @@ function buildTunnelDiodePanel() {
       <span class="td-coherence coherence-low" id="td-coh-${ch}" title="Coherence">0%</span>
       <div class="td-z-bar">
         <div class="td-z-zero-line"></div>
-        <div class="td-z-fill" id="td-zbar-${ch}" style="width:50%;background:#3b82f6"></div>
+        <div class="td-z-fill" id="td-zbar-${ch}" style="width:50%;background:#d13604"></div>
       </div>
     `;
     container.appendChild(row);
@@ -1157,7 +1884,7 @@ function updateTunnelDiodeUI() {
     if (zEl) {
       const zStr = diag.Z.toFixed(1);
       zEl.textContent = `Z:${zStr}Ω`;
-      zEl.style.color = diag.Z < 0 ? '#ef4444' : '#6ee7b7';
+      zEl.style.color = diag.Z < 0 ? '#e60003' : '#fa0';
     }
 
     if (cohEl) {
@@ -1174,11 +1901,11 @@ function updateTunnelDiodeUI() {
       barEl.style.width = zNorm + '%';
       // Color: green when near zero, red when negative, blue when positive
       if (Math.abs(diag.Z) < 5) {
-        barEl.style.background = '#6ee7b7'; // Near zero = coherent
+        barEl.style.background = '#fa0'; // Near zero = coherent
       } else if (diag.Z < 0) {
-        barEl.style.background = '#ef4444'; // NDR region
+        barEl.style.background = '#c92304'; // NDR region
       } else {
-        barEl.style.background = '#3b82f6'; // Normal positive R
+        barEl.style.background = '#d94904'; // Normal positive R
       }
     }
   });
@@ -1194,7 +1921,7 @@ function drawIVCurve() {
   const h = canvas.height;
 
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#0a0a0f';
+  ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, w, h);
 
   // Draw I-V curve
@@ -1202,7 +1929,7 @@ function drawIVCurve() {
   const iMax = 0.002;
 
   // Axes
-  ctx.strokeStyle = '#1a1a2e';
+  ctx.strokeStyle = '#1a1000';
   ctx.lineWidth = 1;
   ctx.beginPath();
   const zeroX = (-vMin / (vMax - vMin)) * w;
@@ -1211,7 +1938,7 @@ function drawIVCurve() {
   ctx.stroke();
 
   // I-V curve
-  ctx.strokeStyle = '#6ee7b7';
+  ctx.strokeStyle = '#fa0';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   for (let px = 0; px < w; px++) {
@@ -1230,7 +1957,7 @@ function drawIVCurve() {
   ctx.fillRect(vpX, 0, vvX - vpX, h);
 
   // Mark operating points for each TD channel
-  const markers = { 'm': '#ec4899', 'i': '#3b82f6', 'k': '#eab308' };
+  const markers = { 'm': '#c92304', 'i': '#d94904', 'k': '#e15c04', 'j': '#e96f04' };
   Object.entries(markers).forEach(([ch, color]) => {
     const diag = tunnelDiodeDiagnostics[ch];
     if (!diag) return;
@@ -1247,11 +1974,11 @@ function drawIVCurve() {
   });
 
   // Labels
-  ctx.fillStyle = '#64748b';
+  ctx.fillStyle = '#553300';
   ctx.font = '8px Courier New';
   ctx.fillText('V', w - 10, h - 3);
   ctx.fillText('I', 3, 10);
-  ctx.fillStyle = 'rgba(239, 68, 68, 0.5)';
+  ctx.fillStyle = 'rgba(230, 0, 3, 0.5)';
   ctx.fillText('NDR', (vpX + vvX) / 2 - 8, 10);
 }
 
@@ -1295,7 +2022,7 @@ function drawWaveforms() {
 
     // Current frame marker
     const curX = ((currentFrame - startFrame) / (endFrame - startFrame)) * w;
-    ctx.strokeStyle = '#6ee7b7';
+    ctx.strokeStyle = '#fa0';
     ctx.globalAlpha = 0.3;
     ctx.beginPath();
     ctx.moveTo(curX, chHeight * ch);
@@ -1316,8 +2043,9 @@ function updateVisualization() {
   // Run octonion matrix transform
   // Map EEG channels to octonion basis order
   const inputVec = new Array(8);
+  const channelProcessedVals = new Array(8); // Store TD-processed values for input column display
   const dt = 1 / 256; // Assume 256Hz sample rate
-  CHANNEL_MAP.forEach(ch => {
+  CHANNEL_MAP.forEach((ch, idx) => {
     const basisIdx = BASIS_IDX[ch.octonion];
     let val = frame[ch.csvIdx] * ch.gain;
 
@@ -1328,75 +2056,68 @@ function updateVisualization() {
       tunnelDiodeDiagnostics[ch.octonion] = result;
     }
 
+    channelProcessedVals[idx] = val; // Store processed value for input column
     inputVec[basisIdx] = val;
   });
 
-  const matrixOutput = octonionMatrixTransform(inputVec);
+  // Compute vector from EEG data as weighted average of channel positions
+  let sumX = 0, sumY = 0, sumZ = 0;
+  let sumWeight = 0;
+  CHANNEL_MAP.forEach((ch, idx) => {
+    const weight = Math.abs(channelProcessedVals[idx]);
+    sumX += weight * ch.brainPos.x;
+    sumY += weight * ch.brainPos.y;
+    sumZ += weight * ch.brainPos.z;
+    sumWeight += weight;
+  });
+  
+  let x = 0, y = 0, z = 1; // Default to pointing up if no valid data
+  if (sumWeight > 0) {
+    x = sumX / sumWeight;
+    y = sumY / sumWeight;
+    z = sumZ / sumWeight;
+    
+    // Normalize to unit vector
+    const length = Math.sqrt(x*x + y*y + z*z);
+    if (length > 0) {
+      x /= length;
+      y /= length;
+      z /= length;
+    }
+  }
+  
+  // Convert to spherical coordinates
+  // a = azimuth angle (from x-y plane, 0 along +x, increasing towards +y)
+  // e = elevation angle (from x-y plane, 0 in plane, +π/2 at +z, -π/2 at -z)
+  const a = Math.atan2(y, x); // azimuth in [-π, π]
+  const e = Math.asin(z);     // elevation in [-π/2, π/2]
+  
+  // Compute spherical harmonic components up to order 3 (16 total components)
+  currentMatrixOutput = new Array(16);
+  let idx = 0;
+  for (let n = 0; n <= 3; n++) { // order
+    for (let m = -n; m <= n; m++) { // degree
+      currentMatrixOutput[idx] = sphericalHarmonic(n, m, a, e);
+      idx++;
+    }
+  }
+  
+  // Apply non-linearity and scaling
+  currentMatrixOutput = currentMatrixOutput.map(val => 
+    Math.tanh(val * 2.0) * 0.8
+  );
+  
+  // Store for neural network and brain visualization
+  currentChannelProcessed = channelProcessedVals;
 
   // Find max output for normalization
-  const maxOut = Math.max(...matrixOutput.map(Math.abs), 0.001);
+  const maxOut = Math.max(...currentMatrixOutput.map(Math.abs), 0.001);
 
-  // Update 3D channel nodes
-  channelNodes.forEach((node, idx) => {
-    const val = frame[idx];
-    const ch = CHANNEL_MAP[idx];
-    const scale = 0.3 + (val - 0.5) * 0.8;
-    node.scale.setScalar(Math.max(0.1, scale));
-    node.position.y = node.userData.baseY + (val - 1.0) * 2;
-
-    // Pulse emissive based on value
-    const intensity = (val - 0.5) / 1.0;
-
-    // Special handling for tunnel diode channels
-    if (node.userData.isTunnelDiode) {
-      const diag = tunnelDiodeDiagnostics[ch.octonion];
-      if (diag) {
-        // Color shifts toward green as coherence increases (Z → 0)
-        const coh = diag.coherence;
-        node.material.emissive.setRGB(
-          intensity * 0.3 * (1 - coh),
-          intensity * 0.5 * coh + 0.1,
-          intensity * 0.2
-        );
-        // Rotate TD nodes based on coherence
-        node.rotation.y += 0.02 + coh * 0.05;
-        node.rotation.z += 0.01;
-      }
-    } else {
-      node.material.emissive.setHSL(0, 0, intensity * 0.5);
-    }
-  });
-
-  // Update output nodes
-  outputNodes.forEach((node, idx) => {
-    const val = matrixOutput[idx];
-    const normalized = Math.abs(val) / maxOut;
-    const scale = 0.2 + normalized * 0.8;
-    node.scale.setScalar(Math.max(0.1, scale));
-    node.position.y = node.userData.baseY + (val / maxOut) * 2;
-
-    // Color based on sign
-    if (val >= 0) {
-      node.material.color.setHex(0x6ee7b7);
-      node.material.emissive.setHex(0x1a5a3a);
-    } else {
-      node.material.color.setHex(0xef4444);
-      node.material.emissive.setHex(0x5a1a1a);
-    }
-    node.material.opacity = 0.3 + normalized * 0.7;
-  });
-
-  // Update connection lines opacity based on activity
-  connectionLines.forEach((line, idx) => {
-    const val = frame[idx];
-    line.material.opacity = 0.1 + (val - 0.5) * 0.6;
-  });
-
-  // Update channel bars
+  // Update channel bars in sidebar UI
   CHANNEL_MAP.forEach((ch, idx) => {
     const bar = document.getElementById('chbar-' + idx);
     if (bar) {
-      const pct = ((frame[idx] - 0.5) / 1.0) * 100;
+      const pct = ((channelProcessedVals[idx] - 0.5) / 1.0) * 100;
       bar.style.width = Math.max(2, pct) + '%';
     }
   });
@@ -1416,24 +2137,47 @@ function updateVisualization() {
     if (barEl) barEl.style.width = (normalized * 100) + '%';
   }
 
-  // Highlight active matrix cells
-  // (highlight the row with largest output)
-  let maxRowIdx = 0;
-  let maxRowVal = 0;
-  for (let r = 0; r < 8; r++) {
-    if (Math.abs(matrixOutput[r]) > maxRowVal) {
-      maxRowVal = Math.abs(matrixOutput[r]);
-      maxRowIdx = r;
-    }
-  }
+  // Highlight active matrix cells based on input signal
+  const displayColOrder = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
+  
+  // Map column basis to input value (centered around 1.0)
+  const colToInput = {};
+  CHANNEL_MAP.forEach((ch, idx) => {
+    colToInput[ch.octonion] = channelProcessedVals[idx];
+  });
+  
+  // Update glow for each cell based on input column values
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
       const cell = document.getElementById('mcell-' + r + '-' + c);
       if (cell) {
-        if (r === maxRowIdx) {
-          cell.classList.add('matrix-cell-active');
+        const colBasis = displayColOrder[c];
+        const inputVal = colToInput[colBasis];
+        const deviation = inputVal - 1.0; // deviation from neutral (1.0)
+        
+        // Remove old glow classes
+        cell.classList.remove('matrix-cell-active');
+        
+        if (Math.abs(deviation) > 0.05) {
+          const intensity = Math.min(Math.abs(deviation) * 3, 1); // Scale and clamp
+          const isPositive = deviation > 0;
+          const color = isPositive ? '#fa0' : '#e60003';
+          const glowColor = isPositive ? 'rgba(255, 170, 0,' : 'rgba(230, 0, 3,';
+          const glowAlpha = intensity * 0.8;
+          cell.style.background = `${glowColor}${glowAlpha})`;
+          cell.style.color = isPositive ? '#fa0' : '#e60003';
+          cell.style.boxShadow = `0 0 ${intensity * 15}px ${glowColor}${glowAlpha})`;
         } else {
-          cell.classList.remove('matrix-cell-active');
+          // Neutral - reset to base style
+          const cellVal = CAYLEY[r][BASIS_IDX[displayColOrder[c]]];
+          if (cellVal.startsWith('-')) {
+            cell.style.background = '#1a0500';
+            cell.style.color = '#e60003';
+          } else {
+            cell.style.background = '';
+            cell.style.color = '';
+          }
+          cell.style.boxShadow = 'none';
         }
       }
     }
@@ -1452,6 +2196,8 @@ function updateVisualization() {
 
 function animate(timestamp) {
   requestAnimationFrame(animate);
+  
+  const time = timestamp / 1000;
 
   if (isPlaying && eegData) {
     const elapsed = timestamp - lastFrameTime;
@@ -1463,11 +2209,37 @@ function animate(timestamp) {
     }
   }
 
-  // Slowly rotate output nodes
-  outputNodes.forEach((node) => {
-    node.rotation.y += 0.01;
-    node.rotation.x += 0.005;
-  });
+  // Update neural network visualization
+  updateBrainVisualization(time, currentChannelProcessed, currentMatrixOutput);
+  
+  // Update neural pulses from center
+  updateNeuralPulses(time, currentChannelProcessed);
+  
+  // Update brain shader time (disabled - brain surface hidden)
+  // if (brainMesh && brainMesh.material.uniforms) {
+  //   brainMesh.material.uniforms.uTime.value = time;
+  // }
+
+  // Update neural nodes shader with matrix output
+  if (neuralNodesMesh && neuralNodesMesh.material.uniforms) {
+    neuralNodesMesh.material.uniforms.uTime.value = time;
+    if (currentMatrixOutput) {
+      neuralNodesMesh.material.uniforms.uMatrixOutput.value = currentMatrixOutput;
+    }
+  }
+  
+  // Update connection lines shader
+  if (neuralConnectionsMesh && neuralConnectionsMesh.material.uniforms) {
+    neuralConnectionsMesh.material.uniforms.uTime.value = time;
+    if (currentMatrixOutput) {
+      neuralConnectionsMesh.material.uniforms.uMatrixOutput.value = currentMatrixOutput;
+    }
+  }
+
+  // Cayley pathways disabled
+  // if (cayleyPathwaysMesh && cayleyPathwaysMesh.material.uniforms && currentMatrixOutput) {
+  //   cayleyPathwaysMesh.material.uniforms.uMatrixOutput.value = currentMatrixOutput;
+  // }
 
   renderer.render(scene, camera);
 }
@@ -1537,7 +2309,7 @@ document.getElementById('btn-sample-info').addEventListener('click', () => {
     '(8 numeric columns, one row per sample)\n\n' +
     'Optional header row is auto-detected.\n' +
     'Data will be normalized to 0.5-1.5 range.\n\n' +
-    'Octonion Channel Mapping:\n' +
+    'Matrix Channel Mapping:\n' +
     'F7→l(67.5°)  Fpz→o(337.5°)\n' +
     'P7→k(157.5°) CZ→1(0°)\n' +
     'F8→n(315°)   PZ→i(202.5°)\n' +
@@ -1614,7 +2386,7 @@ function processRTFrame(values) {
 function setRTStatus(connected, text) {
   const indicator = document.getElementById('rt-indicator');
   const statusText = document.getElementById('rt-status-text');
-  if (indicator) indicator.style.background = connected ? '#6ee7b7' : '#64748b';
+  if (indicator) indicator.style.background = connected ? '#fa0' : '#332200';
   if (statusText) statusText.textContent = text;
   document.getElementById('btn-disconnect').style.display = connected ? '' : 'none';
   document.getElementById('status-text').textContent = connected ? 'LIVE: ' + text : text;
@@ -1779,7 +2551,11 @@ buildChannelList();
 buildTunnelDiodePanel();
 buildMatrixDisplay();
 buildDFTOutput();
+
+// Load embedded brain mesh data and initialize
 initThree();
+// Create neural network visualization (uses brainMeshData if available)
+createNeuralNetworkInsideBrain();
 requestAnimationFrame(animate);
 </script>
 </body>
