@@ -388,15 +388,15 @@ const BASIS_IDX = {}; BASIS.forEach((b, i) => BASIS_IDX[b] = i);
 // Cayley multiplication table from table-1.csv
 // cayleyTable[row][col] = result (as string like "1", "-i", "m", "-o", etc.)
 const cayleyTable = [
-  // ×    1     i     j     k     l     m     n     o
-  /*1*/ ['1',  'i',  'j',  'k',  'l',  'm',  'n',  'o'],
-  /*i*/ ['i',  '-1', 'k', '-j',  'm', '-l', '-o',  'n'],  // row i: i,i=-1; i,j=k; i,k=-j; i,l=m; i,m=-l; i,n=-o; i,o=n
-  /*j*/ ['j', '-k',  '-1', 'i',  'n',  'o', '-l', '-m'],  // row j
-  /*k*/ ['k',  'j', '-i',  '-1', 'o', '-n',  'm', '-l'],  // row k
-  /*l*/ ['l', '-m', '-n', '-o',  '-1', 'i',  'j',  'k'],  // row l
-  /*m*/ ['m',  'l', '-o',  'n', '-i',  '-1', '-k',  'j'],  // row m
-  /*n*/ ['n',  'o',  'l', '-m', '-j',  'k',  '-1', '-i'],  // row n
-  /*o*/ ['o', '-n',  'm',  'l', '-k', '-j',  'i',  '-1'],  // row o
+  // ×    1     m     n     o     l     i     j     k  i     j     k 
+  /*1*/ ['1',  'm',  'n',  'o',  'l',  'i',  'j',  'k'],
+  /*i*/ ['i',  '-l', '-o',  'n',  'm', '-1', 'k', '-j'], // row i: i,i=-1; i,j=k; i,k=-j; i,l=m; i,m=-l; i,n=-o; i,o=n
+  /*j*/ ['j',  'o', '-l', '-m',  'n',  '-k',  '-1', 'i'], // row j
+  /*k*/ ['k',  '-n',  'm', '-l', 'o', 'j', '-i',  '-1'],  // row k
+  /*l*/ ['l',  'i',  'j',  'k',  '-1', '-m', '-n', '-o'],   // row l
+  /*m*/ ['m',  '-1', '-k',  'j', '-i',  'l', '-o',  'n'],  // row m
+  /*n*/ ['n',  'k',  '-1', '-i', '-j',  'o',  'l', '-m'],  // row n
+  /*o*/ ['o', '-j',  'i',  '-1', '-k', '-n',  'm',  'l'],  // row o
 ];
 
 // Parse the Cayley table from the actual CSV data
