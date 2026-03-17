@@ -111,6 +111,75 @@ body::before {
   display: block;
 }
 
+/* Plasma visualizer controls overlay */
+#plasma-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--orange);
+  padding: 12px 16px;
+  border-radius: 4px;
+  z-index: 100;
+  min-width: 180px;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+}
+
+#plasma-controls .panel-title {
+  font-size: 11px;
+  color: var(--orange);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  text-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+  text-align: center;
+}
+
+#plasma-controls .control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+#plasma-controls .control-row:last-child {
+  margin-bottom: 0;
+}
+
+#plasma-controls label {
+  font-size: 11px;
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#plasma-controls input[type="range"] {
+  width: 90px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: linear-gradient(to right, #1a0500, var(--orange));
+  border-radius: 2px;
+  outline: none;
+}
+
+#plasma-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--orange);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--orange);
+}
+
+#plasma-controls .value-display {
+  font-size: 10px;
+  color: var(--orange);
+  opacity: 0.7;
+  width: 35px;
+  text-align: right;
+}
+
 /* Controls */
 .btn {
   background: #000;
@@ -228,6 +297,23 @@ input[type="file"] { display: none; }
 .matrix-cell-active {
   background: var(--orange) !important;
   color: #000 !important;
+}
+.foa-matrix {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 11px;
+}
+.foa-matrix th, .foa-matrix td {
+  padding: 4px 8px;
+  text-align: center;
+  border: 1px solid #2a2a4e;
+}
+.foa-matrix th {
+  color: #6ee7b7;
+  font-size: 10px;
+}
+.foa-matrix td {
+  font-family: monospace;
 }
 
 /* DFT output panel */
@@ -373,6 +459,220 @@ select option {
 .glow {
   animation: glowPulse 2s infinite;
 }
+
+/* 10-20 System Selector Popup */
+#ten-twenty-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+#ten-twenty-modal.active {
+  display: flex;
+}
+.ten-twenty-popup {
+  background: #000;
+  border: 3px solid #fa0;
+  padding: 20px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(255, 102, 0, 0.5);
+}
+.ten-twenty-popup h2 {
+  color: #fa0;
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+}
+.ten-twenty-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 20px;
+  background: 
+    radial-gradient(ellipse 70% 80% at 50% 50%, transparent 30%, #000 70%),
+    linear-gradient(to bottom, transparent 48%, #330000 48%, #330000 52%, transparent 52%);
+  background-color: #0a0000;
+  border: 2px solid #e60003;
+}
+.ten-twenty-grid::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #330000;
+  transform: translateY(-50%);
+}
+.ten-twenty-grid::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #330000;
+  transform: translateX(-50%);
+}
+.ten-twenty-electrode {
+  background: #111;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: none;
+}
+.ten-twenty-electrode:hover {
+  background: #3a0000;
+}
+.ten-twenty-electrode.selected {
+  background: #fa0;
+  color: #000;
+}
+.ten-twenty-electrode .eeg-name {
+  font-size: 11px;
+  color: #e60003;
+  font-weight: bold;
+}
+.ten-twenty-electrode.selected .eeg-name {
+  color: #000;
+}
+.ten-twenty-electrode .region {
+  font-size: 7px;
+  color: #880000;
+  margin-top: 2px;
+}
+.ten-twenty-electrode.selected .region {
+  color: #331a00;
+}
+.ten-twenty-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.ten-twenty-actions .btn {
+  padding: 8px 16px;
+}
+
+/* Ambisonic Vectorscope Popup */
+#ambisonic-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+#ambisonic-modal.active {
+  display: flex;
+}
+.ambisonic-popup {
+  background: #000;
+  border: 3px solid #fa0;
+  padding: min(2vw, 20px);
+  max-width: min(90vw, 800px);
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  box-shadow: 0 0 40px rgba(255, 102, 0, 0.4);
+  overflow-y: auto;
+}
+.ambisonic-popup h2 {
+  color: #fa0;
+  margin: 0 0 min(1.5vw, 15px) 0;
+  font-size: min(2vw, 16px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+}
+.vectorscope-container {
+  position: relative;
+  width: min(60vh, 50vw);
+  height: min(60vh, 50vw);
+  margin: 0 auto;
+  background: 
+    radial-gradient(circle at 50% 50%, #0a0000 0%, #000 70%),
+    linear-gradient(90deg, transparent 49.5%, #330000 49.5%, #330000 50.5%, transparent 50.5%),
+    linear-gradient(0deg, transparent 49.5%, #330000 49.5%, #330000 50.5%, transparent 50.5%);
+  border: 2px solid #e60003;
+}
+#vectorscope-canvas {
+  width: 100%;
+  height: 100%;
+}
+.ambisonic-labels {
+  position: absolute;
+  color: #e60003;
+  font-size: 10px;
+  font-family: 'Roboto Condensed', sans-serif;
+}
+.ambisonic-labels .top { top: 5px; left: 50%; transform: translateX(-50%); }
+.ambisonic-labels .bottom { bottom: 5px; left: 50%; transform: translateX(-50%); }
+.ambisonic-labels .left { left: 5px; top: 50%; transform: translateY(-50%); }
+.ambisonic-labels .right { right: 5px; top: 50%; transform: translateY(-50%); }
+.ambisonic-meters {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: min(0.5vw, 4px);
+  margin-top: min(2vw, 15px);
+}
+.meter-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.meter-bar .label {
+  font-size: min(1.2vw, 10px);
+  color: #fa0;
+  margin-bottom: 2px;
+}
+.meter-bar .bar-container {
+  width: 100%;
+  height: min(8vh, 60px);
+  background: #111;
+  border: 1px solid #330000;
+  position: relative;
+  overflow: hidden;
+}
+.meter-bar .bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, #e60003, #fa0);
+  transition: height 0.05s;
+}
+.ambisonic-actions {
+  margin-top: min(2vw, 15px);
+  display: flex;
+  justify-content: flex-end;
+}
+.ambisonic-actions .btn {
+  padding: min(1vw, 8px) min(2vw, 16px);
+  font-size: min(1.5vw, 12px);
+}
 </style>
 </head>
 <body>
@@ -469,9 +769,42 @@ select option {
       </div>
     </div>
 
+    <!-- 10-20 System Modal -->
+    <div id="ten-twenty-modal">
+      <div class="ten-twenty-popup">
+        <h2>Select 10-20 Electrode Position</h2>
+        <div class="ten-twenty-grid" id="ten-twenty-grid"></div>
+        <div class="ten-twenty-actions">
+          <button class="btn" id="btn-add-electrode">+ Add Electrode</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ambisonic Vectorscope Modal -->
+    <div id="ambisonic-modal">
+      <div class="ambisonic-popup">
+        <h2>Ambisonic 2OA Vectorscope</h2>
+        <div class="vectorscope-container">
+          <canvas id="vectorscope-canvas"></canvas>
+          <div class="ambisonic-labels">
+            <span class="top">+X</span>
+            <span class="bottom">-X</span>
+            <span class="left">+Z</span>
+            <span class="right">-Z</span>
+          </div>
+        </div>
+        <div class="ambisonic-meters" id="ambisonic-meters">
+          <!-- 9 output meters generated by JS -->
+        </div>
+        <div class="ambisonic-actions">
+          <button class="btn" id="btn-close-ambisonic">Close</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tunnel Diode Z-Vector -->
     <div class="panel">
-      <div class="panel-title">Tunnel Diode Z-Vector (m, i, k)</div>
+      <div class="panel-title">Tunnel Diode Z-Vector (FOA_Z)</div>
       <div id="tunnel-diode-panel"></div>
       <div style="margin-top:6px;">
         <canvas id="iv-curve-canvas" width="280" height="100" style="width:100%;height:80px;border:2px solid #553300;border-radius:4px;"></canvas>
@@ -495,19 +828,33 @@ select option {
     <div id="info-overlay">
       <div>Frame: <span class="value" id="ov-frame">—</span></div>
       <div>Channels: <span class="value">8</span></div>
-      <div>Matrix: <span class="value">8×8 Matrix</span></div>
+      <div>Matrix: <span class="value">4×4 FOA</span></div>
       <div>Z-Vector: <span class="value">m, i, k (TD buffered)</span></div>
       <div>Z Mode: <span class="value" id="ov-zmode">Z → 0</span></div>
+    </div>
+    <div id="plasma-controls">
+      <div class="panel-title">Plasma</div>
+      <div class="control-row">
+        <label>Bright</label>
+        <input type="range" id="plasma-brightness" min="0" max="33" value="16">
+        <span class="value-display" id="brightness-val">50%</span>
+      </div>
+      <div class="control-row">
+        <label>Response</label>
+        <input type="range" id="plasma-response" min="10" max="200" value="100">
+        <span class="value-display" id="response-val">100%</span>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="brain_mesh_data.js"></script>
 <script>
 // ============================================================
 // OCTONION ALGEBRA ENGINE
 // ============================================================
-var brainMeshData = null; // Define to avoid ReferenceError if script not loaded
+// brainMeshData is now loaded from brain_mesh_data.js
 
 const BASIS = ['1', 'i', 'j', 'k', 'l', 'm', 'n', 'o'];
 const BASIS_IDX = {}; BASIS.forEach((b, i) => BASIS_IDX[b] = i);
@@ -593,6 +940,7 @@ function octonionMatrixTransform(inputVec) {
 }
 
 // Phase angles from row output table (degrees) — MUTABLE for live editing
+// Speaker azimuth positions for ambisonic decoding
 const PHASE_ANGLES = {
   '1': 0,      // 360 ≡ 0 (CZ: Zenith — positioned on Y axis, not ring)
   'i': 202.5,
@@ -603,6 +951,47 @@ const PHASE_ANGLES = {
   'n': 315.0,
   'o': 337.5
 };
+
+// Get speaker azimuth from stored electrode angle (convert to radians)
+// Uses the angle captured at initialization to keep speakers stationary
+function getSpeakerAzimuth(basis) {
+  // Use the angle stored during init (captures electrode positions at load time)
+  // Fall back to PHASE_ANGLES if not available
+  const angle = (window.speakerAngles && window.speakerAngles[basis]) || PHASE_ANGLES[basis] || 0;
+  return (angle * Math.PI) / 180;
+}
+
+// Decode ambisonic FOA signal to speaker output
+// For each speaker at azimuth θ: output = W + X*cos(θ) + Y*sin(θ) + Z*sin(elevation)
+// Elevation is 0 for ring speakers, except for '1' (top) and 'j' (bottom)
+function decodeAmbisonicToSpeaker(ambisonicOutput, basis) {
+  if (!ambisonicOutput || ambisonicOutput.length < 4) return 0;
+  
+  const W = ambisonicOutput[0] || 0;
+  const X = ambisonicOutput[1] || 0;
+  const Y = ambisonicOutput[2] || 0;
+  const Z = ambisonicOutput[3] || 0;
+  
+  const azimuth = getSpeakerAzimuth(basis);
+  
+  // Handle vertical speakers (1=top, j=bottom)
+  if (basis === '1') {
+    // Top speaker: primarily Z
+    return W * 0.3 + Z;
+  }
+  if (basis === 'j') {
+    // Bottom speaker: primarily -Z  
+    return W * 0.3 - Z;
+  }
+  
+  // Standard ring speakers: decode using direction cosines
+  const cosTheta = Math.cos(azimuth);
+  const sinTheta = Math.sin(azimuth);
+  
+  // Simple ambisonic decoding: W + X*cos + Y*sin
+  // This is basic stereo/quad style decoding
+  return W + X * cosTheta + Y * sinTheta;
+}
 
 // dB loss from row output table
 const DB_LOSS = {
@@ -649,10 +1038,7 @@ const TUNNEL_DIODE_PARAMS = {
 
   // Simulation state (per channel)
   states: {
-    'm': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
-    'i': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
-    'k': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
-    'j': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
+    'FOA_Z': { vCap1: 0, vCap2: 0, vDiode: 0.09, prevOut: 0 },
   }
 };
 
@@ -769,8 +1155,8 @@ function processTunnelDiodeChannel(inputSignal, channelKey, dt) {
   };
 }
 
-// Channels that have tunnel diode modulators
-const TUNNEL_DIODE_CHANNELS = ['m', 'i', 'k', 'j'];
+// Channels that have tunnel diode modulators (only FOA Z vector now)
+const TUNNEL_DIODE_CHANNELS = ['FOA_Z'];
 
 // Store latest tunnel diode diagnostics for UI
 let tunnelDiodeDiagnostics = {};
@@ -922,10 +1308,18 @@ function normalizeData(data) {
 // THREE.JS VISUALIZATION
 // ============================================================
 let scene, camera, renderer, controls;
-let neuralNodesMesh = null;
-let neuralConnectionsMesh = null;
-let neuralNetwork = null;
-let neuralPulseUniforms = null;
+let channelNodes = [];
+let outputNodes = [];
+let channelLabels = [];
+let connectionLines = [];
+let gridHelper;
+let wavePaths = [];
+
+// Plasma visualizer controls
+let plasmaBrightness = 0.5;
+let plasmaResponse = 1.0;
+let globalChannelProcessed = null; // Shared with animate loop for hexagons
+let tdVisualHold = 0; // Visual hold for TD green tint effect
 
 // Cayley matrix basis order (from the algebra)
 const BASIS_ELEMENTS = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
@@ -1018,11 +1412,11 @@ function initThree() {
   const h = container.clientHeight;
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x1a1a22);
-  scene.fog = new THREE.FogExp2(0x000000, 0.012);
+  scene.background = new THREE.Color(0x050508);
+  // Fog removed for plasma visibility
 
   camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
-  camera.position.set(0, 5, 10);
+  camera.position.set(0, 3, 9);  // Closer for larger brain in view
   camera.lookAt(0, 0, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -1031,19 +1425,421 @@ function initThree() {
   container.appendChild(renderer.domElement);
 
   // Lights
-  const ambientLight = new THREE.AmbientLight(0x332200, 0.8);
+  const ambientLight = new THREE.AmbientLight(0x334455, 0.6);
   scene.add(ambientLight);
-  
   const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
   dirLight.position.set(5, 10, 5);
   scene.add(dirLight);
-  
-  const pointLight = new THREE.PointLight(0xfa0, 1.5, 50);
+  const pointLight = new THREE.PointLight(0xfa0, 1, 30);
   pointLight.position.set(0, 5, 0);
   scene.add(pointLight);
 
-  // Create neural network visualization (no brain mesh)
-  createNeuralVisualization();
+  // Hide grid for cleaner plasma globe look
+  gridHelper = new THREE.GridHelper(20, 20, 0x1a1a2e, 0x0d0d14);
+  gridHelper.position.y = -2;
+  gridHelper.visible = false;
+  scene.add(gridHelper);
+
+  // Center reference - W (omnidirectional) source - plasma core
+  // (Now integrated into the plasma shader - hidden)
+  const centerGeo = new THREE.SphereGeometry(0.2, 16, 16);
+  const centerMat = new THREE.MeshBasicMaterial({ 
+    color: 0xffaa00, 
+    transparent: true, 
+    opacity: 0,
+    visible: false
+  });
+  const centerSphere = new THREE.Mesh(centerGeo, centerMat);
+  centerSphere.visible = false;
+  scene.add(centerSphere);
+  window.centerSphere = centerSphere;
+
+  // Create brain mesh
+  let brainMesh = null;
+  let brainSurfaceVertices = null;
+  if (typeof brainMeshData !== 'undefined' && brainMeshData) {
+    const brainGeometry = createBrainMeshFromJSON(brainMeshData, 5);
+    if (brainGeometry) {
+      // PLASMA BALL SHADER - custom shader for energy effect
+      const plasmaVertexShader = `
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec2 vUv;
+        
+        void main() {
+          vPosition = position;
+          vNormal = normalize(normalMatrix * normal);
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `;
+      
+      const plasmaFragmentShader = `
+        uniform float uTime;
+        uniform float uBrightness;
+        uniform float uTDTint;
+        uniform vec3 uColorX;
+        uniform vec3 uColorY;
+        uniform vec3 uColorZ;
+        uniform vec3 uColorW;
+        uniform float uIntensityX;
+        uniform float uIntensityY;
+        uniform float uIntensityZ;
+        uniform float uIntensityW;
+        
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec2 vUv;
+        
+        // Simplex noise functions for organic plasma effect
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+        
+        float snoise(vec3 v) {
+          const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+          const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+          vec3 i  = floor(v + dot(v, C.yyy));
+          vec3 x0 = v - i + dot(i, C.xxx);
+          vec3 g = step(x0.yzx, x0.xyz);
+          vec3 l = 1.0 - g;
+          vec3 i1 = min(g.xyz, l.zxy);
+          vec3 i2 = max(g.xyz, l.zxy);
+          vec3 x1 = x0 - i1 + C.xxx;
+          vec3 x2 = x0 - i2 + C.yyy;
+          vec3 x3 = x0 - D.yyy;
+          i = mod289(i);
+          vec4 p = permute(permute(permute(
+                    i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                  + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                  + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+          float n_ = 0.142857142857;
+          vec3 ns = n_ * D.wyz - D.xzx;
+          vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+          vec4 x_ = floor(j * ns.z);
+          vec4 y_ = floor(j - 7.0 * x_);
+          vec4 x = x_ *ns.x + ns.yyyy;
+          vec4 y = y_ *ns.x + ns.yyyy;
+          vec4 h = 1.0 - abs(x) - abs(y);
+          vec4 b0 = vec4(x.xy, y.xy);
+          vec4 b1 = vec4(x.zw, y.zw);
+          vec4 s0 = floor(b0)*2.0 + 1.0;
+          vec4 s1 = floor(b1)*2.0 + 1.0;
+          vec4 sh = -step(h, vec4(0.0));
+          vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+          vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+          vec3 p0 = vec3(a0.xy, h.x);
+          vec3 p1 = vec3(a0.zw, h.y);
+          vec3 p2 = vec3(a1.xy, h.z);
+          vec3 p3 = vec3(a1.zw, h.w);
+          vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+          p0 *= norm.x;
+          p1 *= norm.y;
+          p2 *= norm.z;
+          p3 *= norm.w;
+          vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+          m = m * m;
+          return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+        }
+        
+        float fbm(vec3 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          float frequency = 1.0;
+          for (int i = 0; i < 4; i++) {
+            value += amplitude * snoise(p * frequency);
+            amplitude *= 0.5;
+            frequency *= 2.0;
+          }
+          return value;
+        }
+        
+        void main() {
+          // Animate noise for plasma effect
+          vec3 noisePos = vPosition * 2.0 + vec3(0.0, 0.0, uTime * 0.5);
+          float noise1 = fbm(noisePos);
+          float noise2 = fbm(noisePos * 1.5 + vec3(100.0));
+          
+          // Electric tendril effect - high frequency noise
+          float tendrils = abs(snoise(vPosition * 8.0 + vec3(uTime * 2.0, 0.0, 0.0)));
+          tendrils = pow(tendrils, 0.5);
+          
+          // Combine noises for plasma look
+          float plasma = noise1 * 0.6 + noise2 * 0.3 + tendrils * 0.4;
+          plasma = plasma * 0.5 + 0.5; // normalize to 0-1
+          
+          // Direction-based coloring from ambisonic components
+          vec3 direction = normalize(vPosition);
+          float xFactor = abs(direction.x) * uIntensityX;
+          float yFactor = abs(direction.z) * uIntensityY;  // front-back
+          float zFactor = abs(direction.y) * uIntensityZ;  // top-bottom
+          float wFactor = uIntensityW * 0.5;
+          
+          // Mix colors based on position and intensity - more vibrant
+          vec3 baseColor = vec3(0.15, 0.04, 0.02); // dark orange-tinted base
+          vec3 color = baseColor;
+          
+          color += uColorX * xFactor * plasma * 3.0;  // Red - left/right
+          color += uColorY * yFactor * plasma * 3.0;  // Green - front/back
+          color += uColorZ * zFactor * plasma * 3.0;  // Blue - top/bottom
+          color += uColorW * wFactor * plasma * 2.0;  // Orange - W (omnidirectional)
+          
+          // Add bright core glow (orange)
+          float distFromCenter = length(vPosition);
+          float coreGlow = pow(max(0.0, 1.0 - distFromCenter / 2.5), 2.0);
+          color += vec3(1.0, 0.4, 0.1) * coreGlow * (0.8 + wFactor * 2.0);
+          
+          // Electric edge glow (orange)
+          float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.5);
+          color += vec3(1.0, 0.5, 0.2) * fresnel * (0.5 + (xFactor + yFactor + zFactor) * 0.5);
+          
+          // Always show some plasma activity (orange tint)
+          float basePlasma = 0.15 + plasma * 0.3;
+          color += vec3(0.2, 0.08, 0.02) * basePlasma;
+          
+          // Output with higher visibility and brightness control
+          float alpha = 0.35 + plasma * 0.25 + (xFactor + yFactor + zFactor + wFactor) * 0.2;
+          alpha = clamp(alpha, 0.25, 0.85);
+          
+          // Add green tint when tunnel diode is active (NDR region)
+          vec3 tdGreen = vec3(0.2, 0.8, 0.2);
+          color = mix(color, color + tdGreen * 0.5, uTDTint);
+          
+          gl_FragColor = vec4(color * uBrightness, alpha);
+        }
+      `;
+      
+      const brainMaterial = new THREE.ShaderMaterial({
+        vertexShader: plasmaVertexShader,
+        fragmentShader: plasmaFragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          uBrightness: { value: 1.0 },
+          uTDTint: { value: 0 },  // Tunnel diode green tint (0-1)
+          uColorX: { value: new THREE.Color(0xff6600) },  // Orange-red
+          uColorY: { value: new THREE.Color(0xff8800) },  // Yellow-orange
+          uColorZ: { value: new THREE.Color(0xff4400) },  // Deep orange
+          uColorW: { value: new THREE.Color(0xffaa00) }, // Bright orange
+          uIntensityX: { value: 0 },
+          uIntensityY: { value: 0 },
+          uIntensityZ: { value: 0 },
+          uIntensityW: { value: 0 }
+        },
+        transparent: true,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      
+      brainMesh = new THREE.Mesh(brainGeometry, brainMaterial);
+      brainMesh.userData = { isBrainMesh: true };
+      // Position to show back of brain to viewer
+      brainMesh.rotation.y = Math.PI;  // Face back toward viewer
+      brainMesh.rotation.x = -0.2;    // Slight tilt
+      scene.add(brainMesh);
+      window.brainMesh = brainMesh;
+      console.log('Brain mesh added with plasma shader');
+      
+      // Add green wireframe overlay
+      const wireframeGeo = new THREE.WireframeGeometry(brainGeometry);
+      const wireframeMat = new THREE.LineBasicMaterial({ 
+        color: 0x00ff00, 
+        transparent: true, 
+        opacity: 0.3 
+      });
+      const wireframe = new THREE.LineSegments(wireframeGeo, wireframeMat);
+      brainMesh.add(wireframe);
+    }
+  }
+
+  // Hide old channel nodes - using plasma globe paradigm instead
+  // (Channel info now flows through wave paths inside the brain mesh)
+  // channelNodes, channelLabels, and connectionLines remain empty
+
+  // Create output nodes on brain surface using diffusion output positions
+  // Map to brain mesh electrode positions
+  const brainScale = 5;
+  let outputPositions = [];
+  
+  // Try to get positions from brain mesh diffusion data first
+  if (typeof brainMeshData !== 'undefined' && brainMeshData && brainMeshData.diffusionData && brainMeshData.diffusionData.outputPositions) {
+    outputPositions = brainMeshData.diffusionData.outputPositions.map(p => new THREE.Vector3(
+      p[0] * brainScale,
+      p[1] * brainScale,
+      p[2] * brainScale
+    ));
+  } else {
+    // Fallback to electrode positions from brain mesh
+    const electrodePos = brainMeshData ? brainMeshData.electrodePositions : null;
+    if (electrodePos) {
+      const basisToElectrode = { '1': 'Fp1', 'm': 'Fp2', 'n': 'F7', 'o': 'F8', 'l': 'Cz', 'i': 'Pz', 'j': 'P7', 'k': 'P8' };
+      outputPositions = BASIS.map(basis => {
+        const name = basisToElectrode[basis];
+        const pos = electrodePos[name] ? electrodePos[name].pos : [0, 0, 0];
+        return new THREE.Vector3(pos[0] * brainScale, pos[1] * brainScale, pos[2] * brainScale);
+      });
+    }
+  }
+  
+  // Create wave paths from center to each output position
+  // These represent 2OA directional signal paths
+  if (outputPositions.length > 0) {
+    outputPositions.forEach((targetPos, idx) => {
+      const basis = BASIS[idx] || '1';
+      
+      // Create curved wave path from center to surface
+      const curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(targetPos.x * 0.5, targetPos.y * 0.5 + 1, targetPos.z * 0.5),
+        targetPos
+      );
+      
+      const points = curve.getPoints(30);
+      // Create plasma globe tendril using tube geometry
+      let pathColor;
+      if (basis === '1' || basis === 'l') pathColor = 0xffaa00;      // W - omnidirectional (orange)
+      else if (basis === 'm' || basis === 'o') pathColor = 0xff4444; // X - left/right (red)
+      else if (basis === 'n' || basis === 'i') pathColor = 0x44ff44; // Y - front/back (green)
+      else pathColor = 0x4444ff; // Z - top/bottom (blue)
+      
+      // Use tube geometry for subtle electric tendrils (now mostly handled by shader)
+      const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.04, 8, false);
+      const tubeMat = new THREE.MeshBasicMaterial({
+        color: pathColor,
+        transparent: true,
+        opacity: 0.15,
+        blending: THREE.AdditiveBlending
+      });
+      const pathTube = new THREE.Mesh(tubeGeo, tubeMat);
+      pathTube.userData = { isWavePath: true, basis: basis, targetPos: targetPos, baseColor: pathColor };
+      pathTube.visible = false; // Hide - plasma is now in shader
+      scene.add(pathTube);
+      wavePaths.push(pathTube);
+    });
+  }
+  
+  // Create discrete surface glow spots at each output position
+  let surfaceGlows = [];
+  if (outputPositions.length > 0) {
+    outputPositions.forEach((pos, idx) => {
+      const basis = BASIS[idx] || '1';
+      let glowColor = basis === '1' || basis === 'l' ? 0xffaa00 : 
+                       basis === 'm' || basis === 'o' ? 0xff4444 : 
+                       basis === 'n' || basis === 'i' ? 0x44ff44 : 0x4444ff;
+      const glowGeo = new THREE.SphereGeometry(0.2, 12, 12);
+      const glowMat = new THREE.MeshBasicMaterial({ color: glowColor, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending });
+      const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+      glowMesh.position.copy(pos);
+      glowMesh.userData = { basis: basis, baseColor: glowColor, outputIndex: idx };
+      glowMesh.visible = false; // Hide - plasma shows at surface
+      scene.add(glowMesh);
+      surfaceGlows.push(glowMesh);
+    });
+  }
+  window.surfaceGlows = surfaceGlows;
+  
+  // Create directional indicators attached to brain
+  // X = front/back (Z axis), Y = left/right (X axis), Z = top/bottom (Y axis)
+  const directionData = [
+    { label: 'X+', offset: { x: 0, y: 0, z: 6 }, color: '#00ff44' },   // Front
+    { label: 'X-', offset: { x: 0, y: 0, z: -6 }, color: '#00ff44' },  // Back
+    { label: 'Y+', offset: { x: 6, y: 0, z: 0 }, color: '#00ff44' },   // Right (from viewer)
+    { label: 'Y-', offset: { x: -6, y: 0, z: 0 }, color: '#00ff44' },  // Left (from viewer)
+    { label: 'Z+', offset: { x: 0, y: 6, z: 0 }, color: '#00ff44' },   // Top
+    { label: 'Z-', offset: { x: 0, y: -6, z: 0 }, color: '#00ff44' }   // Bottom
+  ];
+  
+  let directionIndicators = [];
+  directionData.forEach((dir, idx) => {
+    // Create axis line from brain center to direction (longer)
+    const points = [
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(dir.offset.x, dir.offset.y, dir.offset.z)
+    ];
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+    const lineMat = new THREE.LineBasicMaterial({ 
+      color: dir.color, 
+      transparent: true, 
+      opacity: 0.6 
+    });
+    const line = new THREE.Line(lineGeo, lineMat);
+    line.userData = { label: dir.label };
+    
+    // Create text sprite at the end - larger, green, Roboto Mono
+    const labelSprite = createTextSprite(dir.label, '#00ff00');
+    labelSprite.position.set(dir.offset.x, dir.offset.y, dir.offset.z);
+    labelSprite.scale.setScalar(1.2);  // Larger
+    labelSprite.userData = { label: dir.label };
+    
+    directionIndicators.push({ line: line, sprite: labelSprite, label: dir.label });
+  });
+  
+  // Add to brain mesh group so they rotate with brain
+  if (brainMesh) {
+    directionIndicators.forEach(ind => {
+      brainMesh.add(ind.line);
+      brainMesh.add(ind.sprite);
+    });
+  }
+  window.directionIndicators = directionIndicators;
+  
+  // Create cube with transparent red walls (except facing viewer)
+  const cubeSize = 3.5;  // Sized to fill POV at distance 3 with 60deg FOV
+  const cubeGroup = new THREE.Group();
+  
+  // Create 6 faces for the cube
+  const faceMat = new THREE.MeshBasicMaterial({
+    color: 0xff2200,
+    transparent: true,
+    opacity: 0.10,  // More transparent
+    side: THREE.DoubleSide
+  });
+  
+  // Front face - make it invisible
+  const frontFaceGeo = new THREE.PlaneGeometry(cubeSize * 2, cubeSize * 2);
+  const frontFace = new THREE.Mesh(frontFaceGeo, new THREE.MeshBasicMaterial({ visible: false }));
+  frontFace.position.z = cubeSize;
+  cubeGroup.add(frontFace);
+  
+  // Back face
+  const backFace = new THREE.Mesh(frontFaceGeo.clone(), faceMat.clone());
+  backFace.position.z = -cubeSize;
+  backFace.rotation.y = Math.PI;
+  cubeGroup.add(backFace);
+  
+  // Left face
+  const leftFaceGeo = new THREE.PlaneGeometry(cubeSize * 2, cubeSize * 2);
+  const leftFace = new THREE.Mesh(leftFaceGeo, faceMat.clone());
+  leftFace.position.x = -cubeSize;
+  leftFace.rotation.y = -Math.PI / 2;
+  cubeGroup.add(leftFace);
+  
+  // Right face
+  const rightFace = new THREE.Mesh(leftFaceGeo.clone(), faceMat.clone());
+  rightFace.position.x = cubeSize;
+  rightFace.rotation.y = Math.PI / 2;
+  cubeGroup.add(rightFace);
+  
+  // Top face
+  const topFaceGeo = new THREE.PlaneGeometry(cubeSize * 2, cubeSize * 2);
+  const topFace = new THREE.Mesh(topFaceGeo, faceMat.clone());
+  topFace.position.y = cubeSize;
+  topFace.rotation.x = -Math.PI / 2;
+  cubeGroup.add(topFace);
+  
+  // Bottom face
+  const bottomFace = new THREE.Mesh(topFaceGeo.clone(), faceMat.clone());
+  bottomFace.position.y = -cubeSize;
+  bottomFace.rotation.x = Math.PI / 2;
+  cubeGroup.add(bottomFace);
+  
+  cubeGroup.userData = { isCubeGroup: true };
+  scene.add(cubeGroup);
+  window.cubeGroup = cubeGroup;
+  
+  // Store speaker positions for decoding
+  window.speakerAngles = {};
 
   // Mouse orbit control
   setupOrbitControls(container);
@@ -1057,626 +1853,23 @@ function initThree() {
   });
 }
 
-// ============================================================
-// BRAIN WIREFRAME VISUALIZATION
-// ============================================================
-let brainMesh = null;
-let brainWireframe = null;
-let prevChannelVals = new Array(8).fill(1.0);
-
-// Brain dimensions - 0.7071 of visualization area (~7 units radius)
-// Keep above floor (y > -2)
-const BRAIN_SCALE = 7.0;
-const BRAIN_RADIUS_X = 1.0 * BRAIN_SCALE;
-const BRAIN_RADIUS_Y = 1.2 * BRAIN_SCALE;
-const BRAIN_RADIUS_Z = 1.0 * BRAIN_SCALE;
-
-function createBrainModel() {
-  // Remove existing
-  if (brainMesh) { scene.remove(brainMesh); brainMesh.geometry.dispose(); brainMesh.material.dispose(); }
-  if (brainWireframe) { scene.remove(brainWireframe); brainWireframe.geometry.dispose(); brainWireframe.material.dispose(); }
-
-  // Use loaded brain mesh JSON data
-  let brainGeo;
-  let cayleyConnections = null;
-  
-  if (brainMeshData && brainMeshData.vertices && brainMeshData.vertices.length > 0) {
-    const positions = [];
-    // Handle both flat array and nested array formats
-    if (typeof brainMeshData.vertices[0] === 'number') {
-      // Flat array - just scale by 7
-      for (let i = 0; i < brainMeshData.vertices.length; i += 3) {
-        positions.push(brainMeshData.vertices[i] * 7, brainMeshData.vertices[i+1] * 7, brainMeshData.vertices[i+2] * 7);
-      }
-    } else {
-      // Nested array [[x,y,z],...]
-      brainMeshData.vertices.forEach(v => {
-        positions.push(v[0] * 7, v[1] * 7, v[2] * 7);
-      });
-    }
-    
-    const indices = [];
-    if (brainMeshData.faces) {
-      brainMeshData.faces.forEach(f => {
-        if (f.length >= 3) {
-          indices.push(f[0], f[1], f[2]);
-        }
-      });
-    }
-    
-    brainGeo = new THREE.BufferGeometry();
-    brainGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    if (indices.length > 0) {
-      brainGeo.setIndex(indices);
-    }
-    brainGeo.computeVertexNormals();
-    
-    console.log('Created brain geometry:', positions.length / 3, 'vertices');
-  }
-  // Fallback if no data
-  if (!brainGeo) {
-    brainGeo = new THREE.SphereGeometry(7, 32, 24);
-  }
-  
-  // Create orange wireframe
-  const wireGeo = new THREE.WireframeGeometry(brainGeo);
-  const wireMat = new THREE.LineBasicMaterial({ color: 0xfa0, transparent: true, opacity: 0.2 });
-  brainWireframe = new THREE.LineSegments(wireGeo, wireMat);
-  scene.add(brainWireframe);
-  console.log('Created wireframe');
-}
-
-// ============================================================
-// NEURAL NETWORK VISUALIZATION
-// ============================================================
-let neuralPulseData = {
-  positions: [],
-  times: [],
-  amplitudes: [],
-  directions: []
-};
-
-const MAX_PULSES = 8;
-
-function createNeuralNetworkInsideBrain() {
-  // Remove existing
-  if (neuralNodesMesh) { scene.remove(neuralNodesMesh); neuralNodesMesh.geometry.dispose(); neuralNodesMesh.material.dispose(); }
-  if (neuralConnectionsMesh) { scene.remove(neuralConnectionsMesh); neuralConnectionsMesh.geometry.dispose(); neuralConnectionsMesh.material.dispose(); }
-  
-  // Get brain mesh vertices for distribution
-  let brainVerts = [];
-  if (brainMeshData && brainMeshData.vertices) {
-    const vertCount = typeof brainMeshData.vertices[0] === 'number' ? brainMeshData.vertices.length / 3 : brainMeshData.vertices.length;
-    for (let i = 0; i < vertCount; i++) {
-      let x, y, z;
-      if (typeof brainMeshData.vertices[0] === 'number') {
-        x = brainMeshData.vertices[i*3] || 0;
-        y = brainMeshData.vertices[i*3+1] || 0;
-        z = brainMeshData.vertices[i*3+2] || 0;
-      } else {
-        x = brainMeshData.vertices[i][0] || 0;
-        y = brainMeshData.vertices[i][1] || 0;
-        z = brainMeshData.vertices[i][2] || 0;
-      }
-      brainVerts.push({x: x * 5, y: y * 5, z: z * 5});
-    }
-  }
-  
-  // Fallback sphere vertices
-  if (brainVerts.length < 100) {
-    const numVerts = 1326;
-    const goldenRatio = (1 + Math.sqrt(5)) / 2;
-    for (let i = 0; i < numVerts; i++) {
-      const phi = Math.acos(1 - 2 * (i + 0.5) / numVerts);
-      const theta = 2 * Math.PI * i / goldenRatio;
-      const r = 4;
-      brainVerts.push({
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.cos(phi),
-        z: r * Math.sin(phi) * Math.sin(theta)
-      });
-    }
-  }
-  
-  // === SPHERICAL HARMONIC NODE POSITIONING ===
-  // 4 layers: n=0 (1), n=1 (3), n=2 (5), n=3 (7) = 16 total nodes
-  const nodes = [];
-  const nodeRadius = 4;
-  
-  // Spherical harmonic Y(n,m) formulas
-  // a = azimuthal angle (0 to 2π), e = elevation angle (0=equator to π/2=pole)
-  function sphericalHarmonic(n, m, a, e) {
-    // Convert to standard spherical coordinates
-    const sinE = Math.sin(e);
-    const cosE = Math.cos(e);
-    const sinA = Math.sin(a);
-    const cosA = Math.cos(a);
-    
-    switch(n) {
-      case 0: return 1; // Y(0,0)
-      case 1:
-        switch(m) {
-          case -1: return sinA * cosE; // Y(1,-1) = sin(a)*cos(e)
-          case 0: return sinE;         // Y(1,0) = sin(e)
-          case 1: return cosA * cosE;  // Y(1,1) = cos(a)*cos(e)
-        }
-      case 2:
-        switch(m) {
-          case -2: return Math.sqrt(3/4) * sin(2*a) * cosE * cosE; // Y(2,-2)
-          case -1: return Math.sqrt(3/4) * sinA * sin(2*e);         // Y(2,-1)
-          case 0: return 0.5 * (3 * sinE * sinE - 1);               // Y(2,0)
-          case 1: return Math.sqrt(3/4) * cosA * sin(2*e);          // Y(2,1)
-          case 2: return Math.sqrt(3/4) * cos(2*a) * cosE * cosE;   // Y(2,2)
-        }
-      case 3:
-        switch(m) {
-          case -3: return Math.sqrt(5/8) * sin(3*a) * cosE * cosE * cosE;      // Y(3,-3)
-          case -2: return Math.sqrt(15/4) * sin(2*a) * sinE * cosE * cosE;    // Y(3,-2)
-          case -1: return Math.sqrt(3/8) * sinA * cosE * (5 * sinE * sinE - 1); // Y(3,-1)
-          case 0: return 0.5 * sinE * (5 * sinE * sinE - 3);                  // Y(3,0)
-          case 1: return Math.sqrt(3/8) * cosA * cosE * (5 * sinE * sinE - 1); // Y(3,1)
-          case 2: return Math.sqrt(15/4) * cos(2*a) * sinE * cosE * cosE;    // Y(3,2)
-          case 3: return Math.sqrt(5/8) * cos(3*a) * cosE * cosE * cosE;      // Y(3,3)
-        }
-    }
-    return 0;
-  }
-  
-  // Generate 16 spherical harmonic nodes
-  const harmonicNodes = []; // {n, m, basisIdx, pos}
-  
-  // Layer n=0 (l=0): 1 node
-  harmonicNodes.push({n: 0, m: 0, basisIdx: 0, name: 'W'});
-  
-  // Layer n=1 (l=-1,0,1): 3 nodes
-  harmonicNodes.push({n: 1, m: -1, basisIdx: 1, name: 'Y'});
-  harmonicNodes.push({n: 1, m: 0, basisIdx: 2, name: 'Z'});
-  harmonicNodes.push({n: 1, m: 1, basisIdx: 3, name: 'X'});
-  
-  // Layer n=2 (l=-2,-1,0,1,2): 5 nodes
-  harmonicNodes.push({n: 2, m: -2, basisIdx: 4, name: 'V'});
-  harmonicNodes.push({n: 2, m: -1, basisIdx: 5, name: 'T'});
-  harmonicNodes.push({n: 2, m: 0, basisIdx: 6, name: 'R'});
-  harmonicNodes.push({n: 2, m: 1, basisIdx: 7, name: 'S'});
-  harmonicNodes.push({n: 2, m: 2, basisIdx: 8, name: 'U'});
-  
-  // Layer n=3 (l=-3,-2,-1,0,1,2,3): 7 nodes
-  harmonicNodes.push({n: 3, m: -3, basisIdx: 9, name: 'Q'});
-  harmonicNodes.push({n: 3, m: -2, basisIdx: 10, name: 'O'});
-  harmonicNodes.push({n: 3, m: -1, basisIdx: 11, name: 'M'});
-  harmonicNodes.push({n: 3, m: 0, basisIdx: 12, name: 'K'});
-  harmonicNodes.push({n: 3, m: 1, basisIdx: 13, name: 'L'});
-  harmonicNodes.push({n: 3, m: 2, basisIdx: 14, name: 'N'});
-  harmonicNodes.push({n: 3, m: 3, basisIdx: 15, name: 'P'});
-  
-  // Position nodes using brain mesh geodesics
-  harmonicNodes.forEach((hn, idx) => {
-    // Distribute based on spherical harmonic order
-    const vertIdx = Math.floor((idx / 16) * brainVerts.length);
-    const bv = brainVerts[vertIdx] || {x: 0, y: 0, z: 0};
-    
-    // Calculate spherical harmonic value for positioning
-    const azimuthal = (hn.m + hn.n) * Math.PI / (hn.n + 1); // Spread evenly in azimuth
-    const elevation = hn.m * Math.PI / (2 * hn.n + 2) + Math.PI / 4; // Spread in elevation
-    
-    const shValue = sphericalHarmonic(hn.n, hn.m, azimuthal, elevation);
-    const r = nodeRadius * (0.5 + Math.abs(shValue) * 0.5);
-    
-    // Position on sphere with brain mesh influence
-    const x = r * Math.sin(elevation) * Math.cos(azimuthal);
-    const y = r * Math.cos(elevation);
-    const z = r * Math.sin(elevation) * Math.sin(azimuthal);
-    
-    // Blend with brain mesh vertex
-    const brainBlend = 0.3;
-    const finalX = x * (1 - brainBlend) + bv.x * brainBlend;
-    const finalY = y * (1 - brainBlend) + bv.y * brainBlend;
-    const finalZ = z * (1 - brainBlend) + bv.z * brainBlend;
-    
-    hn.pos = new THREE.Vector3(finalX, finalY, finalZ);
-    hn.azimuthal = azimuthal;
-    hn.elevation = elevation;
-    nodes.push(hn);
-  });
-  
-  // === CAYLEY MATRIX SUMMING ===
-  // Create connections based on Cayley table - each node sums from lower layer nodes
-  const connections = [];
-  
-  // Cayley multiplication results for each harmonic
-  const cayleyResults = {}; // Maps (fromBasis, toBasis) -> {sign, resultBasis}
-  
-  // Process Cayley table for spherical harmonics
-  for (let fromIdx = 0; fromIdx < nodes.length; fromIdx++) {
-    for (let toIdx = 0; toIdx < nodes.length; toIdx++) {
-      const fromNode = nodes[fromIdx];
-      const toNode = nodes[toIdx];
-      
-      // Sum contributions from lower n to higher n
-      if (fromNode.n < toNode.n) {
-        // Calculate Cayley product sign based on basis indices
-        const fromBasis = fromNode.basisIdx;
-        const toBasis = toNode.basisIdx;
-        
-        // XOR-based polarity (simplified Cayley)
-        const polarity = ((fromBasis & toBasis) % 2 === 0) ? 1 : -1;
-        
-        connections.push({
-          from: fromNode,
-          to: toNode,
-          fromIdx: fromIdx,
-          toIdx: toIdx,
-          polarity: polarity,
-          strength: polarity > 0 ? 1.0 : 0.3
-        });
-      }
-    }
-  }
-  
-  // Store node data
-  const nodePositions = [];
-  const nodeLevels = [];
-  const nodeSizes = [];
-  const nodeBasisIdx = [];
-  const nodeHarmonicN = [];
-  const nodeHarmonicM = [];
-  
-  nodes.forEach(node => {
-    nodePositions.push(node.pos.x, node.pos.y, node.pos.z);
-    nodeLevels.push(node.n / 3); // Normalize layer 0-1
-    nodeBasisIdx.push(node.basisIdx);
-    nodeHarmonicN.push(node.n);
-    nodeHarmonicM.push(node.m);
-    
-    // Size: center (n=0) largest, outer layers smaller
-    const baseSize = node.n === 0 ? 1.5 : (1.2 - node.n * 0.2);
-    nodeSizes.push(baseSize);
-  });
-  
-  const nodeGeo = new THREE.BufferGeometry();
-  nodeGeo.setAttribute('position', new THREE.Float32BufferAttribute(nodePositions, 3));
-  nodeGeo.setAttribute('level', new THREE.Float32BufferAttribute(nodeLevels, 1));
-  nodeGeo.setAttribute('basisIdx', new THREE.Float32BufferAttribute(nodeBasisIdx, 1));
-  nodeGeo.setAttribute('harmonicN', new THREE.Float32BufferAttribute(nodeHarmonicN, 1));
-  nodeGeo.setAttribute('harmonicM', new THREE.Float32BufferAttribute(nodeHarmonicM, 1));
-  nodeGeo.setAttribute('size', new THREE.Float32BufferAttribute(nodeSizes, 1));
-  
-  // Create connection geometry
-  const connectionPositions = [];
-  const connectionStrengths = [];
-  const connectionPolarity = [];
-  const connectionFromIdx = [];
-  const connectionToIdx = [];
-  
-  for (let i = 0; i < connections.length; i++) {
-    const conn = connections[i];
-    connectionPositions.push(
-      conn.from.pos.x, conn.from.pos.y, conn.from.pos.z,
-      conn.to.pos.x, conn.to.pos.y, conn.to.pos.z
-    );
-    connectionStrengths.push(conn.strength, conn.strength);
-    connectionPolarity.push(conn.polarity > 0 ? 1.0 : 0.0, conn.polarity > 0 ? 1.0 : 0.0);
-    connectionFromIdx.push(conn.fromIdx, conn.fromIdx);
-    connectionToIdx.push(conn.toIdx, conn.toIdx);
-  }
-  
-  const connectionsGeo = new THREE.BufferGeometry();
-  connectionsGeo.setAttribute('position', new THREE.Float32BufferAttribute(connectionPositions, 3));
-  connectionsGeo.setAttribute('strength', new THREE.Float32BufferAttribute(connectionStrengths, 1));
-  connectionsGeo.setAttribute('polarity', new THREE.Float32BufferAttribute(connectionPolarity, 1));
-  connectionsGeo.setAttribute('fromIdx', new THREE.Float32BufferAttribute(connectionFromIdx, 1));
-  connectionsGeo.setAttribute('toIdx', new THREE.Float32BufferAttribute(connectionToIdx, 1));
-  
-  // Create shaders
-  const connectionsMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uTime: { value: 0 },
-      uMatrixOutput: { value: new Array(16).fill(0) }
-    },
-    vertexShader: `
-      attribute float strength;
-      attribute float polarity;
-      attribute float fromIdx;
-      attribute float toIdx;
-      varying float vStrength;
-      varying float vPolarity;
-      varying float vFromIdx;
-      varying float vToIdx;
-      varying vec3 vPosition;
-      
-      void main() {
-        vStrength = strength;
-        vPolarity = polarity;
-        vFromIdx = fromIdx;
-        vToIdx = toIdx;
-        vPosition = position;
-        
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * mvPosition;
-      }
-    `,
-    fragmentShader: `
-      uniform float uMatrixOutput[16];
-      varying float vStrength;
-      varying float vPolarity;
-      varying float vFromIdx;
-      varying float vToIdx;
-      varying vec3 vPosition;
-      
-      void main() {
-        // Get input from fromIdx
-        int fi = int(vFromIdx);
-        float inputVal = uMatrixOutput[fi];
-        
-        // Apply polarity
-        if (vPolarity < 0.5) {
-          inputVal = -inputVal;
-        }
-        
-        float amplitude = abs(inputVal);
-        
-        // Color: black=low, green=Z→0, red=negative, orange=positive
-        vec3 color = vec3(0.0);
-        
-        if (amplitude < 0.05) {
-          float t = amplitude / 0.05;
-          color = mix(vec3(0.0, 1.0, 0.5), vec3(0.0), t);
-        } else if (inputVal < 0.0) {
-          color = vec3(1.0, 0.0, 0.0);
-        } else {
-          color = vec3(1.0, 0.4, 0.0);
-        }
-        
-        color *= (0.3 + amplitude * 0.7);
-        float alpha = vStrength * 0.5;
-        
-        gl_FragColor = vec4(color, alpha);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  });
-  
-  neuralConnectionsMesh = new THREE.LineSegments(connectionsGeo, connectionsMat);
-  scene.add(neuralConnectionsMesh);
-  
-  console.log('Spherical harmonic network:', nodes.length, 'nodes,', connections.length, 'connections');
-  
-  // Node shader
-  const neuralNodeShader = {
-    uniforms: {
-      uTime: { value: 0 },
-      uMatrixOutput: { value: new Array(16).fill(0) }
-    },
-    vertexShader: `
-      attribute float size;
-      attribute float level;
-      attribute float basisIdx;
-      attribute float harmonicN;
-      attribute float harmonicM;
-      varying float vSize;
-      varying float vLevel;
-      varying float vBasisIdx;
-      varying float vHarmonicN;
-      varying vec3 vPosition;
-      
-      void main() {
-        vSize = size;
-        vLevel = level;
-        vBasisIdx = basisIdx;
-        vHarmonicN = harmonicN;
-        vPosition = position;
-        
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size * (300.0 / -mvPosition.z);
-        gl_Position = projectionMatrix * mvPosition;
-      }
-    `,
-    fragmentShader: `
-      uniform float uMatrixOutput[16];
-      
-      varying float vSize;
-      varying float vLevel;
-      varying float vBasisIdx;
-      varying float vHarmonicN;
-      varying vec3 vPosition;
-      
-      void main() {
-        // Get matrix output for this node
-        int idx = int(clamp(vBasisIdx, 0.0, 15.0));
-        float matrixVal = uMatrixOutput[idx];
-        float amplitude = abs(matrixVal);
-        
-        // Color: black=lowest, green=Z→0, red=negative, orange=positive
-        vec3 baseColor = vec3(0.0);
-        
-        if (amplitude < 0.05) {
-          float t = amplitude / 0.05;
-          baseColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.0), t);
-        } else if (matrixVal < 0.0) {
-          baseColor = vec3(1.0, 0.0, 0.0);
-        } else {
-          baseColor = vec3(1.0, 0.4, 0.0);
-        }
-        
-        // Boost based on layer (outer layers more visible)
-        baseColor *= (0.3 + vHarmonicN * 0.2 + amplitude * 0.5);
-        
-        // Circle shape
-        vec2 center = gl_PointCoord - 0.5;
-        float dist = length(center);
-        if (dist > 0.5) discard;
-        
-        float alpha = (1.0 - smoothstep(0.0, 0.5, dist));
-        
-        gl_FragColor = vec4(baseColor, alpha);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  };
-  
-  const nodeMat = new THREE.ShaderMaterial(neuralNodeShader);
-  
-  neuralNodesMesh = new THREE.Points(nodeGeo, nodeMat);
-  scene.add(neuralNodesMesh);
-}
-
-function getPhaseDirection(channelIdx) {
-  const ch = CHANNEL_MAP[channelIdx];
-  if (!ch) return new THREE.Vector3(0, 1, 0);
-  
-  const angle = ch.angle * Math.PI / 180;
-  const yAngle = (ch.yAngle || 0) * Math.PI / 180;
-  
-  // Convert spherical to cartesian
-  const x = Math.cos(angle) * Math.cos(yAngle);
-  const y = Math.sin(yAngle);
-  const z = Math.sin(angle) * Math.cos(yAngle);
-  
-  return new THREE.Vector3(x, y, z).normalize();
-}
-
-// Initialize pulse data
-function initNeuralPulseData() {
-  neuralPulseData = {
-    positions: [],
-    times: [],
-    amplitudes: [],
-    directions: []
-  };
-}
-
-function createNeuralVisualization() {
-  createNeuralNetworkInsideBrain();
-  initNeuralPulseData();
-}
-
-// Update neural pulses - propagate from center along phase directions to surface
-let lastPulseTime = 0;
-
-function updateNeuralPulses(time, channelProcessedVals) {
-  if (!channelProcessedVals) return;
-  
-  // Calculate activity
-  const totalActivity = channelProcessedVals.reduce((a, b) => a + Math.abs(b - 1.0), 0) / 8;
-  
-  // Spawn new pulses based on signal activity
-  const pulseInterval = 0.15; // seconds between pulses
-  if (time - lastPulseTime > pulseInterval && totalActivity > 0.02) {
-    // Spawn pulse for each active channel
-    channelProcessedVals.forEach((val, idx) => {
-      const deviation = val - 1.0;
-      if (Math.abs(deviation) > 0.05) {
-        const direction = getPhaseDirection(idx);
-        
-        // Add pulse
-        neuralPulseData.positions.push(new THREE.Vector3(0, 0, 0));
-        neuralPulseData.times.push(time);
-        neuralPulseData.amplitudes.push(deviation);
-        neuralPulseData.directions.push(direction);
-        
-        // Limit number of pulses
-        if (neuralPulseData.positions.length > MAX_PULSES * 8) {
-          neuralPulseData.positions.shift();
-          neuralPulseData.times.shift();
-          neuralPulseData.amplitudes.shift();
-          neuralPulseData.directions.shift();
-        }
-      }
-    });
-    lastPulseTime = time;
-  }
-  
-  // Update brain surface glow based on matrix output
-  updateBrainSurfaceGlow(time, currentMatrixOutput);
-}
-
-// Surface glow effect on brain mesh - driven by Cayley matrix row outputs
-function updateBrainSurfaceGlow(time, matrixOutput) {
-  if (!brainMesh || !brainMesh.material.uniforms) return;
-  
-  const uniforms = brainMesh.material.uniforms;
-  
-  // Reset glow
-  uniforms.uGlowIntensity.value = 0;
-  uniforms.uGlowPosition.value.set(0, -100, 0);
-  
-  // Use matrix output directly to drive surface reactions
-  // Rows: 1, i, j, k, l, m, n, o map to directions on sphere surface
-  if (!matrixOutput || matrixOutput.length < 8) return;
-  
-  const surfaceRadius = 6.5;
-  let totalIntensity = 0;
-  let weightedPos = new THREE.Vector3();
-  
-  // Cayley row basis elements mapped to spherical directions
-  const rowBasisDirs = [
-    { basis: '1', dir: new THREE.Vector3(0, 1, 0) },    // Top
-    { basis: 'i', dir: new THREE.Vector3(0, -0.5, 0.866) },  // Front
-    { basis: 'j', dir: new THREE.Vector3(0, -0.5, -0.866) }, // Back
-    { basis: 'k', dir: new THREE.Vector3(0.866, -0.5, 0) },  // Right
-    { basis: 'l', dir: new THREE.Vector3(-0.866, -0.5, 0) }, // Left
-    { basis: 'm', dir: new THREE.Vector3(0.5, 0.5, 0.5) },  // Diagonal
-    { basis: 'n', dir: new THREE.Vector3(-0.5, 0.5, 0.5) },
-    { basis: 'o', dir: new THREE.Vector3(0.5, 0.5, -0.5) }
-  ];
-  
-  for (let row = 0; row < 8; row++) {
-    const val = matrixOutput[row];
-    if (val > 0) { // Only positive outputs
-      const intensity = Math.min(val * 0.5, 1);
-      totalIntensity += intensity;
-      
-      const dir = rowBasisDirs[row].dir.normalize().multiplyScalar(surfaceRadius);
-      weightedPos.add(dir.multiplyScalar(intensity));
-    }
-  }
-  
-  // Normalize position
-  if (totalIntensity > 0.01) {
-    weightedPos.divideScalar(totalIntensity);
-    const finalIntensity = Math.min(totalIntensity, 1);
-    uniforms.uGlowIntensity.value = finalIntensity;
-    uniforms.uGlowPosition.value.copy(weightedPos);
-  }
-}
-
-function updateBrainVisualization(time, channelProcessedVals, matrixOutput) {
-  // Calculate signal activity
-  const inputActivity = channelProcessedVals ? channelProcessedVals.reduce((a, b) => a + Math.abs(b - 1.0), 0) / 8 : 0;
-  const outputActivity = matrixOutput ? Math.abs(matrixOutput.reduce((a, b) => a + b, 0) / 8) : 0;
-  const totalActivity = Math.min(inputActivity + outputActivity, 1);
-  
-  // Gentle rotation like neuralsim.html (sin(t * 0.04) * 0.05)
-  const rotationY = Math.sin(time * 0.04) * 0.05;
-  if (brainWireframe) {
-    brainWireframe.rotation.y = rotationY;
-  }
-  if (neuralNodesMesh) {
-    neuralNodesMesh.rotation.y = rotationY;
-  }
-  if (neuralConnectionsMesh) {
-    neuralConnectionsMesh.rotation.y = rotationY;
-  }
-}
-
 function createTextSprite(text, color) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 64;
   const ctx = canvas.getContext('2d');
-  ctx.font = 'bold 24px Courier New';
+  ctx.clearRect(0, 0, 256, 64);
+  ctx.font = 'bold 24px Roboto Condensed';
   ctx.fillStyle = color;
   ctx.textAlign = 'center';
   ctx.fillText(text, 128, 40);
 
   const texture = new THREE.CanvasTexture(canvas);
-  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  texture.minFilter = THREE.LinearFilter;
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(2, 0.5, 1);
+  sprite.renderOrder = 999;
   return sprite;
 }
 
@@ -1687,11 +1880,18 @@ let spherical = { theta: 0.3, phi: 1.0, radius: 15 };
 
 function setupOrbitControls(container) {
   container.addEventListener('mousedown', (e) => {
+    const controlBox = document.getElementById('plasma-controls');
+    if (controlBox && controlBox.contains(e.target)) return;
     isDragging = true;
     prevMouse = { x: e.clientX, y: e.clientY };
   });
   container.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
+    const controlBox = document.getElementById('plasma-controls');
+    if (controlBox && controlBox.contains(e.target)) {
+      isDragging = false;
+      return;
+    }
     const dx = e.clientX - prevMouse.x;
     const dy = e.clientY - prevMouse.y;
     spherical.theta -= dx * 0.005;
@@ -1702,6 +1902,8 @@ function setupOrbitControls(container) {
   container.addEventListener('mouseup', () => isDragging = false);
   container.addEventListener('mouseleave', () => isDragging = false);
   container.addEventListener('wheel', (e) => {
+    const controlBox = document.getElementById('plasma-controls');
+    if (controlBox && controlBox.contains(e.target)) return;
     spherical.radius = Math.max(5, Math.min(40, spherical.radius + e.deltaY * 0.01));
     updateCamera();
     e.preventDefault();
@@ -1813,20 +2015,75 @@ function repositionAllNodes() {
   CHANNEL_MAP.forEach((ch, idx) => repositionChannelNode(idx));
 }
 
+// FOA matrix encoding - map 8 electrodes to 4 quadrants
+const FOA_QUADRANTS = {
+  'LFU': ['F7'],        // Left, Front, Up
+  'LBD': ['P7'],        // Left, Back, Down
+  'RBU': ['F8', 'CZ'],  // Right, Back, Up (use F8 as closest)
+  'RFD': ['P8', 'PZ']   // Right, Front, Down (use P8 as closest)
+};
+
+// FOA encoding coefficients (simplified 4x4 matrix)
+// W = -(LFU + LBD + RBU + RFD)
+// X = 2.83 * (-LFU + LBD + RBU - RFD)
+// Y = 2.83 * (-LFU - LBD + RBU + RFD)  
+// Z = 2.83 * (-LFU + LBD - RBU + RFD)
+const FOA_MATRIX = [
+  ['-1', '-1', '-1', '-1'],      // W
+  ['-2.83', '+2.83', '+2.83', '-2.83'], // X
+  ['-2.83', '-2.83', '+2.83', '+2.83'], // Y
+  ['-2.83', '+2.83', '-2.83', '+2.83']  // Z
+];
+const FOA_LABELS = ['W', 'X', 'Y', 'Z'];
+const FOA_COLS = ['LFU', 'LBD', 'RBU', 'RFD'];
+
+function getFOAQuadrantValues(channelVals) {
+  const quadVals = { 'LFU': 0, 'LBD': 0, 'RBU': 0, 'RFD': 0 };
+  const quadCounts = { 'LFU': 0, 'LBD': 0, 'RBU': 0, 'RFD': 0 };
+  
+  CHANNEL_MAP.forEach(function(ch, idx) {
+    const val = channelVals ? channelVals[idx] : 0.5;
+    const dev = (val - 0.5) * 2; // Center around 0
+    
+    // Classify electrode into quadrants based on brain position
+    const x = ch.brainPos.x;
+    const y = ch.brainPos.y;
+    const z = ch.brainPos.z;
+    
+    let quad = '';
+    if (x < 0 && z > 0 && y > 0) quad = 'LFU';
+    else if (x < 0 && z < 0 && y < 0) quad = 'LBD';
+    else if (x > 0 && z < 0 && y > 0) quad = 'RBU';
+    else if (x > 0 && z < 0 && y < 0) quad = 'RFD';
+    else if (x < 0) quad = z > 0 ? 'LFU' : 'LBD';
+    else if (x > 0) quad = z < 0 ? 'RBU' : 'RFD';
+    else quad = y > 0 ? 'RBU' : 'RFD';
+    
+    if (quad && quadVals.hasOwnProperty(quad)) {
+      quadVals[quad] += dev;
+      quadCounts[quad]++;
+    }
+  });
+  
+  // Average and normalize
+  FOA_COLS.forEach(function(q) {
+    if (quadCounts[q] > 0) quadVals[q] /= quadCounts[q];
+  });
+  
+  return quadVals;
+}
+
 function buildMatrixDisplay() {
   const container = document.getElementById('matrix-display');
-  const displayColOrder = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
-  let html = '<table><tr><th>×</th>';
-  displayColOrder.forEach(b => html += `<th>${b}</th>`);
+  let html = '<table class="foa-matrix"><tr><th>FOA</th>';
+  FOA_COLS.forEach(b => html += `<th>${b}</th>`);
   html += '</tr>';
-  for (let r = 0; r < 8; r++) {
-    html += `<tr><th>${BASIS[r]}</th>`;
-    for (let c = 0; c < 8; c++) {
-      const colBasis = displayColOrder[c];
-      const ci = BASIS_IDX[colBasis];
-      const val = CAYLEY[r][ci];
+  for (let r = 0; r < 4; r++) {
+    html += `<tr><th>${FOA_LABELS[r]}</th>`;
+    for (let c = 0; c < 4; c++) {
+      const val = FOA_MATRIX[r][c];
       const negClass = val.startsWith('-') ? 'style="background:#1a0500;color:#c92304;"' : '';
-      html += `<td id="mcell-${r}-${c}" ${negClass}>${val}</td>`;
+      html += `<td id="mcell-${r}-${c}" ${negClass}></td>`;  // No number, just cell for glow
     }
     html += '</tr>';
   }
@@ -1856,20 +2113,20 @@ function buildDFTOutput() {
 function buildTunnelDiodePanel() {
   const container = document.getElementById('tunnel-diode-panel');
   container.innerHTML = '';
-  TUNNEL_DIODE_CHANNELS.forEach(ch => {
-    const row = document.createElement('div');
-    row.className = 'td-row';
-    row.innerHTML = `
-      <span class="td-channel">${ch}</span>
-      <span class="td-z" id="td-z-${ch}" title="Impedance">Z: 0.0Ω</span>
-      <span class="td-coherence coherence-low" id="td-coh-${ch}" title="Coherence">0%</span>
-      <div class="td-z-bar">
-        <div class="td-z-zero-line"></div>
-        <div class="td-z-fill" id="td-zbar-${ch}" style="width:50%;background:#d13604"></div>
-      </div>
-    `;
-    container.appendChild(row);
-  });
+  // Show FOA_Z channel with its indicator
+  const ch = 'FOA_Z';
+  const row = document.createElement('div');
+  row.className = 'td-row';
+  row.innerHTML = `
+    <span class="td-channel">Z</span>
+    <span class="td-z" id="td-z-${ch}" title="Impedance">Z: 0.0Ω</span>
+    <span class="td-coherence coherence-low" id="td-coh-${ch}" title="Coherence">0%</span>
+    <div class="td-z-bar">
+      <div class="td-z-zero-line"></div>
+      <div class="td-z-fill" id="td-zbar-${ch}" style="width:50%;background:#d13604"></div>
+    </div>
+  `;
+  container.appendChild(row);
 }
 
 function updateTunnelDiodeUI() {
@@ -1956,22 +2213,29 @@ function drawIVCurve() {
   const vvX = ((0.4 - vMin) / (vMax - vMin)) * w;
   ctx.fillRect(vpX, 0, vvX - vpX, h);
 
-  // Mark operating points for each TD channel
-  const markers = { 'm': '#c92304', 'i': '#d94904', 'k': '#e15c04', 'j': '#e96f04' };
-  Object.entries(markers).forEach(([ch, color]) => {
-    const diag = tunnelDiodeDiagnostics[ch];
-    if (!diag) return;
-    const px = ((diag.diodeV - vMin) / (vMax - vMin)) * w;
-    const py = h - (diag.diodeI / iMax) * h;
+  // Mark operating point for FOA_Z tunnel diode
+  const tdDiag = tunnelDiodeDiagnostics['FOA_Z'];
+  if (tdDiag) {
+    const px = ((tdDiag.diodeV - vMin) / (vMax - vMin)) * w;
+    const py = h - (tdDiag.diodeI / iMax) * h;
+    // Green when in NDR region (negative resistance)
+    const color = tdDiag.Z < 0 ? '#32cd32' : '#fa0';
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(px, Math.max(3, Math.min(h - 3, py)), 3, 0, Math.PI * 2);
+    ctx.arc(px, Math.max(3, Math.min(h - 3, py)), 4, 0, Math.PI * 2);
     ctx.fill();
+    // Glow effect
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(px, Math.max(3, Math.min(h - 3, py)), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
     // Label
     ctx.fillStyle = color;
-    ctx.font = '8px Courier New';
-    ctx.fillText(ch, px + 5, Math.max(10, Math.min(h - 3, py)));
-  });
+    ctx.font = 'bold 10px Courier New';
+    // Label removed
+  }
 
   // Labels
   ctx.fillStyle = '#553300';
@@ -2032,6 +2296,42 @@ function drawWaveforms() {
   }
 }
 
+function sphericalHarmonic(n, m, a, e) {
+  const sinE = Math.sin(e);
+  const cosE = Math.cos(e);
+  const sinA = Math.sin(a);
+  const cosA = Math.cos(a);
+  
+  switch(n) {
+    case 0: return 1;
+    case 1:
+      switch(m) {
+        case -1: return sinA * cosE;
+        case 0: return sinE;
+        case 1: return cosA * cosE;
+      }
+    case 2:
+      switch(m) {
+        case -2: return Math.sqrt(3/4) * Math.sin(2*a) * cosE * cosE;
+        case -1: return Math.sqrt(3/4) * sinA * Math.sin(2*e);
+        case 0: return 0.5 * (3 * sinE * sinE - 1);
+        case 1: return Math.sqrt(3/4) * cosA * Math.sin(2*e);
+        case 2: return Math.sqrt(3/4) * Math.cos(2*a) * cosE * cosE;
+      }
+    case 3:
+      switch(m) {
+        case -3: return Math.sqrt(5/8) * Math.sin(3*a) * cosE * cosE * cosE;
+        case -2: return Math.sqrt(15/4) * Math.sin(2*a) * sinE * cosE * cosE;
+        case -1: return Math.sqrt(3/8) * sinA * cosE * (5 * sinE * sinE - 1);
+        case 0: return 0.5 * sinE * (5 * sinE * sinE - 3);
+        case 1: return Math.sqrt(3/8) * cosA * cosE * (5 * sinE * sinE - 1);
+        case 2: return Math.sqrt(15/4) * Math.cos(2*a) * sinE * cosE * cosE;
+        case 3: return Math.sqrt(5/8) * Math.cos(3*a) * cosE * cosE * cosE;
+      }
+  }
+  return 0;
+}
+
 // ============================================================
 // MAIN UPDATE LOOP
 // ============================================================
@@ -2048,17 +2348,22 @@ function updateVisualization() {
   CHANNEL_MAP.forEach((ch, idx) => {
     const basisIdx = BASIS_IDX[ch.octonion];
     let val = frame[ch.csvIdx] * ch.gain;
-
-    // Apply tunnel diode modulation on Z-vector channels (m, i, k)
-    if (TUNNEL_DIODE_CHANNELS.includes(ch.octonion)) {
-      const result = processTunnelDiodeChannel(val, ch.octonion, dt);
-      val = result.output;
-      tunnelDiodeDiagnostics[ch.octonion] = result;
-    }
-
     channelProcessedVals[idx] = val; // Store processed value for input column
     inputVec[basisIdx] = val;
   });
+  
+  // Share with animate loop for hexagon updates
+  globalChannelProcessed = channelProcessedVals.slice();
+  
+  // Compute ambisonic output
+  let ambisonicRaw = computeAmbisonic2OA(channelProcessedVals);
+  
+  // Apply tunnel diode only to Z component (FOA vertical vector)
+  const zKey = 'FOA_Z';
+  const zVal = ambisonicRaw[3] || 0;
+  const tdResult = processTunnelDiodeChannel(zVal, zKey, dt);
+  ambisonicRaw[3] = tdResult.output;
+  tunnelDiodeDiagnostics['FOA_Z'] = tdResult;
 
   // Compute vector from EEG data as weighted average of channel positions
   let sumX = 0, sumY = 0, sumZ = 0;
@@ -2110,8 +2415,9 @@ function updateVisualization() {
   // Store for neural network and brain visualization
   currentChannelProcessed = channelProcessedVals;
 
-  // Find max output for normalization
-  const maxOut = Math.max(...currentMatrixOutput.map(Math.abs), 0.001);
+  // Find max output for normalization (from ambisonic decoded values)
+  const decodedMax = ambisonicOutput ? ambisonicOutput.slice(0, 4).reduce((max, val) => Math.max(max, Math.abs(val)), 0.001) : 0.001;
+  const maxOut = decodedMax;
 
   // Update channel bars in sidebar UI
   CHANNEL_MAP.forEach((ch, idx) => {
@@ -2122,10 +2428,12 @@ function updateVisualization() {
     }
   });
 
-  // Update DFT output display
+  // Update DFT output display with ambisonic-decoded speaker values
   for (let idx = 0; idx < 8; idx++) {
-    const mag = Math.abs(matrixOutput[idx]);
-    const phase = PHASE_ANGLES[BASIS[idx]];
+    const basis = BASIS[idx];
+    const decodedVal = ambisonicOutput ? decodeAmbisonicToSpeaker(ambisonicOutput, basis) : 0;
+    const mag = Math.abs(decodedVal);
+    const phase = (window.speakerAngles && window.speakerAngles[basis]) || PHASE_ANGLES[basis] || 0;
     const normalized = mag / maxOut;
 
     const magEl = document.getElementById('dft-mag-' + idx);
@@ -2137,42 +2445,44 @@ function updateVisualization() {
     if (barEl) barEl.style.width = (normalized * 100) + '%';
   }
 
-  // Highlight active matrix cells based on input signal
-  const displayColOrder = ['1', 'm', 'n', 'o', 'l', 'i', 'j', 'k'];
+  // Highlight active FOA matrix cells based on quadrant values
+  const quadVals = getFOAQuadrantValues(channelProcessedVals);
   
-  // Map column basis to input value (centered around 1.0)
-  const colToInput = {};
-  CHANNEL_MAP.forEach((ch, idx) => {
-    colToInput[ch.octonion] = channelProcessedVals[idx];
-  });
-  
-  // Update glow for each cell based on input column values
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
+  // Update glow for each cell based on FOA quadrant values
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
       const cell = document.getElementById('mcell-' + r + '-' + c);
       if (cell) {
-        const colBasis = displayColOrder[c];
-        const inputVal = colToInput[colBasis];
-        const deviation = inputVal - 1.0; // deviation from neutral (1.0)
+        const quadName = FOA_COLS[c];
+        const coef = FOA_MATRIX[r][c];
+        const coefVal = parseFloat(coef);
+        const quadVal = quadVals[quadName] || 0;
+        
+        // FOA output = coefficient * quadrant value
+        const output = coefVal * quadVal;
+        const intensity = Math.min(Math.abs(output) * 0.5, 1);
         
         // Remove old glow classes
         cell.classList.remove('matrix-cell-active');
         
-        if (Math.abs(deviation) > 0.05) {
-          const intensity = Math.min(Math.abs(deviation) * 3, 1); // Scale and clamp
-          const isPositive = deviation > 0;
-          const color = isPositive ? '#fa0' : '#e60003';
-          const glowColor = isPositive ? 'rgba(255, 170, 0,' : 'rgba(230, 0, 3,';
+        if (intensity > 0.05) {
+          const isPositive = output > 0;
+          
+          // Check if tunnel diode is in NDR region (negative resistance)
+          const tdDiag = tunnelDiodeDiagnostics['FOA_Z'];
+          const tdActive = tdDiag && tdDiag.Z < 0;
+          
+          // Green glow when TD kicks in (NDR region)
+          const glowColor = tdActive ? 'rgba(50, 205, 50,' : (isPositive ? 'rgba(255, 170, 0,' : 'rgba(230, 0, 3,');
           const glowAlpha = intensity * 0.8;
-          cell.style.background = `${glowColor}${glowAlpha})`;
-          cell.style.color = isPositive ? '#fa0' : '#e60003';
-          cell.style.boxShadow = `0 0 ${intensity * 15}px ${glowColor}${glowAlpha})`;
+          cell.style.background = glowColor + glowAlpha + ')';
+          cell.style.color = tdActive ? '#32cd32' : (isPositive ? '#fa0' : '#e60003');
+          cell.style.boxShadow = '0 0 ' + (intensity * 15) + 'px ' + glowColor + glowAlpha + ')';
         } else {
           // Neutral - reset to base style
-          const cellVal = CAYLEY[r][BASIS_IDX[displayColOrder[c]]];
-          if (cellVal.startsWith('-')) {
+          if (coef.startsWith('-')) {
             cell.style.background = '#1a0500';
-            cell.style.color = '#e60003';
+            cell.style.color = '#c92304';
           } else {
             cell.style.background = '';
             cell.style.color = '';
@@ -2191,13 +2501,18 @@ function updateVisualization() {
   // Update tunnel diode diagnostics display
   updateTunnelDiodeUI();
 
+  // Compute ambisonic 2OA from processed channels
+  if (channelProcessedVals) {
+    ambisonicOutput = computeAmbisonic2OA(channelProcessedVals);
+    updateAmbisonicMeters(ambisonicOutput);
+    drawVectorscope(ambisonicOutput, currentFrame / 256);
+  }
+
   drawWaveforms();
 }
 
 function animate(timestamp) {
   requestAnimationFrame(animate);
-  
-  const time = timestamp / 1000;
 
   if (isPlaying && eegData) {
     const elapsed = timestamp - lastFrameTime;
@@ -2209,37 +2524,183 @@ function animate(timestamp) {
     }
   }
 
-  // Update neural network visualization
-  updateBrainVisualization(time, currentChannelProcessed, currentMatrixOutput);
-  
-  // Update neural pulses from center
-  updateNeuralPulses(time, currentChannelProcessed);
-  
-  // Update brain shader time (disabled - brain surface hidden)
-  // if (brainMesh && brainMesh.material.uniforms) {
-  //   brainMesh.material.uniforms.uTime.value = time;
-  // }
-
-  // Update neural nodes shader with matrix output
-  if (neuralNodesMesh && neuralNodesMesh.material.uniforms) {
-    neuralNodesMesh.material.uniforms.uTime.value = time;
-    if (currentMatrixOutput) {
-      neuralNodesMesh.material.uniforms.uMatrixOutput.value = currentMatrixOutput;
-    }
+  // Update center sphere - plasma core with electric pulsing
+  if (ambisonicOutput && window.centerSphere) {
+    const wVal = ambisonicOutput[0] || 0;
+    const wIntensity = Math.abs(wVal);
+    const time = timestamp * 0.003;
+    
+    // Electric pulsing with erratic flicker
+    const flicker = Math.sin(time * 20) * 0.1 + Math.sin(time * 13) * 0.05;
+    const pulse = 0.8 + wIntensity * 2.0 + Math.sin(time * 8) * 0.2 * wIntensity + flicker * wIntensity;
+    window.centerSphere.scale.setScalar(pulse);
+    
+    // Color shifts from deep orange to bright white based on intensity
+    const r = 1.0;
+    const g = 0.4 + wIntensity * 0.6;
+    const b = wIntensity * 0.5;
+    window.centerSphere.material.color.setRGB(r, g, b);
+    window.centerSphere.material.opacity = 0.6 + wIntensity * 0.4;
+    
+    // Fast rotation for electric energy feel
+    window.centerSphere.rotation.y += 0.05;
+    window.centerSphere.rotation.x += 0.02;
   }
   
-  // Update connection lines shader
-  if (neuralConnectionsMesh && neuralConnectionsMesh.material.uniforms) {
-    neuralConnectionsMesh.material.uniforms.uTime.value = time;
-    if (currentMatrixOutput) {
-      neuralConnectionsMesh.material.uniforms.uMatrixOutput.value = currentMatrixOutput;
+  // Update wave paths (2OA directional paths from center to surface)
+  if (ambisonicOutput && wavePaths.length > 0) {
+    wavePaths.forEach((pathLine, idx) => {
+      const basis = pathLine.userData.basis;
+      let pathIntensity = 0;
+      
+      // Map basis to ambisonic component
+      if (basis === '1' || basis === 'l') {
+        pathIntensity = Math.abs(ambisonicOutput[0] || 0); // W
+      } else if (basis === 'm' || basis === 'o') {
+        pathIntensity = Math.abs(ambisonicOutput[1] || 0); // X
+      } else if (basis === 'n' || basis === 'i') {
+        pathIntensity = Math.abs(ambisonicOutput[2] || 0); // Y
+      } else {
+        pathIntensity = Math.abs(ambisonicOutput[3] || 0); // Z
+      }
+      
+      pathLine.scale.setScalar(0.5 + pathIntensity * 0.5);
+      // Subtle flowing animation
+      const flowPhase = Math.sin(timestamp * 0.006 + idx * 0.5);
+      pathLine.material.opacity = 0.05 + pathIntensity * 0.2 + flowPhase * 0.05 * pathIntensity;
+    });
+  }
+  
+  // Update discrete surface glow spots
+  if (ambisonicOutput && window.surfaceGlows) {
+    window.surfaceGlows.forEach(function(glow, idx) {
+      var basis = glow.userData.basis;
+      var compVal = (basis === '1' || basis === 'l') ? ambisonicOutput[0] :
+                    (basis === 'm' || basis === 'o') ? ambisonicOutput[1] :
+                    (basis === 'n' || basis === 'i') ? ambisonicOutput[2] : ambisonicOutput[3];
+      compVal = compVal || 0;
+      var intensity = Math.abs(compVal);
+      var time = timestamp * 0.003;
+      glow.scale.setScalar(0.8 + intensity * 1.0);
+      glow.material.opacity = 0.05 + intensity * 0.3;
+    });
+  }
+  
+  // Update cube - ALWAYS locked to camera, even before data loads
+  if (window.cubeGroup && camera) {
+    // Position cube directly in front of camera to fill window
+    const cubeDistance = 3; // Very close to fill POV
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyQuaternion(camera.quaternion);
+    const cubePos = camera.position.clone().add(forward.multiplyScalar(cubeDistance));
+    
+    window.cubeGroup.position.copy(cubePos);
+    window.cubeGroup.quaternion.copy(camera.quaternion);
+  }
+  
+  // Update plasma shader uniforms with ambisonic values
+  if (ambisonicOutput && window.brainMesh && window.brainMesh.material.uniforms) {
+    // Response controls animation speed
+    var timeScale = plasmaResponse;
+    var time = timestamp * 0.001 * timeScale;
+    window.brainMesh.material.uniforms.uTime.value = time;
+    window.brainMesh.material.uniforms.uBrightness.value = plasmaBrightness;
+    // Apply plasma response multiplier to intensity
+    window.brainMesh.material.uniforms.uIntensityX.value = Math.abs(ambisonicOutput[1] || 0) * plasmaResponse;
+    window.brainMesh.material.uniforms.uIntensityY.value = Math.abs(ambisonicOutput[2] || 0) * plasmaResponse;
+    window.brainMesh.material.uniforms.uIntensityZ.value = Math.abs(ambisonicOutput[3] || 0) * plasmaResponse;
+    window.brainMesh.material.uniforms.uIntensityW.value = Math.abs(ambisonicOutput[0] || 0) * plasmaResponse;
+    
+    // Green tint when TD is active (NDR region) - with visual hold
+    const tdDiag = tunnelDiodeDiagnostics['FOA_Z'];
+    const tdActive = tdDiag && tdDiag.Z < 0 ? 1 : 0;
+    
+    // Visual hold: when TD activates, ramp up; when deactivates, decay slowly
+    if (tdActive > 0) {
+      tdVisualHold = Math.min(1, tdVisualHold + 0.1); // Quick ramp up
+    } else {
+      tdVisualHold = Math.max(0, tdVisualHold - 0.005); // Slow decay (~3-4 seconds to zero)
     }
+    window.brainMesh.material.uniforms.uTDTint.value = tdVisualHold;
+  }
+  
+  // Brain is stationary now - position set in initThree
+  // Cube is now locked to camera
+  // Directional indicators are attached to brain object
+  
+  // Update directional indicators - attached to brain, show basic pulse
+  if (window.directionIndicators && globalChannelProcessed) {
+    // Get average signal intensity for pulsing
+    let avgIntensity = 0;
+    if (globalChannelProcessed) {
+      globalChannelProcessed.forEach(v => avgIntensity += Math.abs(v - 0.5));
+      avgIntensity = (avgIntensity / 8) * 2;
+    }
+    
+    window.directionIndicators.forEach(function(indObj) {
+      // Pulse based on signal intensity
+      const pulse = Math.sin(timestamp * 0.005) * 0.2 + 0.8;
+      const intensity = avgIntensity * pulse;
+      
+      indObj.line.material.opacity = 0.2 + intensity * 0.4;
+      indObj.sprite.material.opacity = 0.3 + intensity * 0.5;
+      indObj.sprite.scale.setScalar(0.4 + intensity * 0.3);
+    });
   }
 
-  // Cayley pathways disabled
-  // if (cayleyPathwaysMesh && cayleyPathwaysMesh.material.uniforms && currentMatrixOutput) {
-  //   cayleyPathwaysMesh.material.uniforms.uMatrixOutput.value = currentMatrixOutput;
-  // }
+  // Update output nodes based on ambisonic decoding
+  if (ambisonicOutput) {
+    outputNodes.forEach(function(node, idx) {
+      var basis = node.userData ? node.userData.basis : BASIS[idx];
+      var outVal = decodeAmbisonicToSpeaker(ambisonicOutput, basis);
+      var intensity = Math.abs(outVal);
+      var scale = 1 + intensity * 2;
+      node.scale.setScalar(scale);
+      
+      if (node.material) {
+        if (intensity > 0.1) {
+          var hue = outVal > 0 ? 0.1 : 0.0;
+          node.material.color.setHSL(hue, 1, 0.3 + intensity * 0.3);
+          node.material.emissive.setHSL(hue, 1, intensity * 0.3);
+          node.material.opacity = 0.8;
+        } else {
+          node.material.color.setHex(0x334455);
+          node.material.emissive.setHex(0x112233);
+          node.material.opacity = 0.6;
+        }
+      }
+    });
+  }
+
+  // Update channel nodes based on processed values
+  if (currentChannelProcessed) {
+    channelNodes.forEach(function(node, idx) {
+      var val = currentChannelProcessed[idx] || 0.5;
+      var deviation = val - 0.5;
+      var intensity = Math.abs(deviation) * 2;
+      
+      if (node.material && node.userData && node.userData.channel) {
+        var baseColor = new THREE.Color(node.userData.channel.color || '#ffffff');
+        if (intensity > 0.1) {
+          var glowColor = deviation > 0 ? baseColor : new THREE.Color(0xe60003);
+          node.material.emissive.copy(glowColor).multiplyScalar(intensity);
+        } else {
+          node.material.emissive.copy(baseColor).multiplyScalar(0.3);
+        }
+      }
+      
+      if (node.userData && node.userData.isTunnelDiode) {
+        var pulse = 1 + Math.sin(timestamp * 0.01) * 0.2 * intensity;
+        node.scale.setScalar(pulse);
+      }
+    });
+  }
+
+  // Slowly rotate output nodes
+  outputNodes.forEach(function(node) {
+    node.rotation.y += 0.01;
+    node.rotation.x += 0.005;
+  });
 
   renderer.render(scene, camera);
 }
@@ -2300,6 +2761,17 @@ document.getElementById('timeline').addEventListener('input', (e) => {
 document.getElementById('speed-slider').addEventListener('input', (e) => {
   playbackSpeed = parseInt(e.target.value);
   document.getElementById('speed-label').textContent = playbackSpeed + ' fps';
+});
+
+// Plasma visualizer controls
+document.getElementById('plasma-brightness').addEventListener('input', (e) => {
+  plasmaBrightness = parseInt(e.target.value) / 33;  // 0-33 range mapped to 0-1
+  document.getElementById('brightness-val').textContent = Math.round(plasmaBrightness * 100) + '%';
+});
+
+document.getElementById('plasma-response').addEventListener('input', (e) => {
+  plasmaResponse = parseInt(e.target.value) / 100;
+  document.getElementById('response-val').textContent = Math.round(plasmaResponse * 100) + '%';
 });
 
 document.getElementById('btn-sample-info').addEventListener('click', () => {
@@ -2545,6 +3017,412 @@ document.getElementById('btn-serial-go').addEventListener('click', connectSerial
 document.getElementById('btn-disconnect').addEventListener('click', disconnect);
 
 // ============================================================
+// ============================================================
+// 10-20 ELECTRODE SELECTOR
+// ============================================================
+const TEN_TWENTY_ELECTRODES = [
+  { name: 'Fp1', region: 'Left Prefrontal', x: -0.72, y: 0.78, z: 0.42 },
+  { name: 'Fpz', region: 'Midline Prefrontal', x: 0, y: 0.85, z: 0.52 },
+  { name: 'Fp2', region: 'Right Prefrontal', x: 0.72, y: 0.78, z: 0.42 },
+  { name: 'F7', region: 'Left Anterior Temporal', x: -0.78, y: 0.72, z: 0.52 },
+  { name: 'F3', region: 'Left Mid Frontal', x: -0.55, y: 0.75, z: 0.62 },
+  { name: 'Fz', region: 'Midline Frontal', x: 0, y: 0.80, z: 0.60 },
+  { name: 'F4', region: 'Right Mid Frontal', x: 0.55, y: 0.75, z: 0.62 },
+  { name: 'F8', region: 'Right Anterior Temporal', x: 0.78, y: 0.72, z: 0.52 },
+  { name: 'T3', region: 'Left Temporal', x: -0.85, y: 0.10, z: 0.35 },
+  { name: 'C3', region: 'Left Central', x: -0.55, y: 0.45, z: 0.78 },
+  { name: 'Cz', region: 'Midline Central', x: 0, y: 0.35, z: 0.88 },
+  { name: 'C4', region: 'Right Central', x: 0.55, y: 0.45, z: 0.78 },
+  { name: 'T4', region: 'Right Temporal', x: 0.85, y: 0.10, z: 0.35 },
+  { name: 'P7', region: 'Left Posterior Temporal', x: -0.65, y: -0.15, z: -0.65 },
+  { name: 'P3', region: 'Left Parietal', x: -0.45, y: -0.25, z: -0.75 },
+  { name: 'Pz', region: 'Midline Parietal', x: 0, y: -0.05, z: -0.85 },
+  { name: 'P4', region: 'Right Parietal', x: 0.45, y: -0.25, z: -0.75 },
+  { name: 'P8', region: 'Right Posterior Temporal', x: 0.65, y: -0.15, z: -0.65 },
+  { name: 'O1', region: 'Left Occipital', x: -0.45, y: -0.45, z: -0.65 },
+  { name: 'Oz', region: 'Midline Occipital', x: 0, y: -0.35, z: -0.75 },
+  { name: 'O2', region: 'Right Occipital', x: 0.45, y: -0.45, z: -0.65 },
+];
+
+let selectedTenTwenty = null;
+
+function buildTenTwentyGrid() {
+  const grid = document.getElementById('ten-twenty-grid');
+  grid.innerHTML = '';
+  
+  const currentCh = CHANNEL_MAP[window.replacingChannelIdx];
+  
+  TEN_TWENTY_ELECTRODES.forEach(el => {
+    const div = document.createElement('div');
+    div.className = 'ten-twenty-electrode';
+    div.innerHTML = `
+      <span class="eeg-name">${el.name}</span>
+      <span class="region">${el.region}</span>
+    `;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.ten-twenty-electrode').forEach(d => d.classList.remove('selected'));
+      div.classList.add('selected');
+      selectedTenTwenty = el;
+    });
+    grid.appendChild(div);
+  });
+}
+
+function addTenTwentyElectrode() {
+  if (!selectedTenTwenty || window.replacingChannelIdx === undefined) return;
+  
+  const ch = CHANNEL_MAP[window.replacingChannelIdx];
+  ch.brainPos = { x: selectedTenTwenty.x, y: selectedTenTwenty.y, z: selectedTenTwenty.z };
+  ch.eeg = selectedTenTwenty.name;
+  
+  // Calculate angle from brain position
+  const bp = ch.brainPos;
+  ch.angle = Math.atan2(bp.z, bp.x) * 180 / Math.PI;
+  if (ch.angle < 0) ch.angle += 360;
+  
+  document.getElementById('ten-twenty-modal').classList.remove('active');
+  buildChannelList();
+  repositionAllNodes();
+}
+
+// ============================================================
+// AMBONIC VECTORSCOPE
+// ============================================================
+const vectorscopeTrail = [];
+const MAX_TRAIL = 200;
+let vectorscopeZoom = 1.0;
+
+// Mouse wheel zoom for vectorscope
+document.getElementById('vectorscope-canvas').addEventListener('wheel', function(e) {
+  e.preventDefault();
+  vectorscopeZoom *= e.deltaY > 0 ? 0.9 : 1.1;
+  vectorscopeZoom = Math.max(0.3, Math.min(3.0, vectorscopeZoom));
+});
+
+function buildAmbisonicMeters() {
+  const container = document.getElementById('ambisonic-meters');
+  container.innerHTML = '';
+  const labels = ['W', 'X', 'Y', 'Z', 'R', 'S', 'T', 'U', 'V'];
+  labels.forEach((label, idx) => {
+    const meter = document.createElement('div');
+    meter.className = 'meter-bar';
+    meter.innerHTML = `
+      <span class="label">${label}</span>
+      <div class="bar-container">
+        <div class="bar-fill" id="amb-meter-${idx}" style="height:50%"></div>
+      </div>
+    `;
+    container.appendChild(meter);
+  });
+}
+
+function computeAmbisonic2OA(inputVec) {
+  // Pure ambisonic encoding based on electrode positions
+  // Opposing electrodes contribute with opposite signs (X+ vs X-, Y+ vs Y-, Z+ vs Z-)
+  // Center electrodes only contribute to W (omnidirectional) and Z (vertical)
+  
+  const ch = CHANNEL_MAP.map((c, i) => ({ 
+    ...c, 
+    val: (inputVec[i] || 0.5) - 0.5, // Center around 0
+    x: c.brainPos.x,
+    y: c.brainPos.z, // Use Z as Y on the horizontal plane
+    z: c.brainPos.y  // Use Y as Z (elevation)
+  }));
+  
+  // Identify electrodes by their primary direction
+  const getDirection = (c) => {
+    const ax = Math.abs(c.x);
+    const ay = Math.abs(c.y);
+    const az = Math.abs(c.z);
+    if (az > ax && az > ay) return 'vertical';   // Z direction
+    if (ax > ay) return c.x > 0 ? 'right' : 'left';  // X direction
+    return c.y > 0 ? 'front' : 'back';  // Y direction
+  };
+  
+  ch.forEach(c => { c.dir = getDirection(c); });
+  
+  // Group electrodes by direction
+  const leftElectrodes = ch.filter(c => c.dir === 'left');
+  const rightElectrodes = ch.filter(c => c.dir === 'right');
+  const frontElectrodes = ch.filter(c => c.dir === 'front');
+  const backElectrodes = ch.filter(c => c.dir === 'back');
+  const centerElectrodes = ch.filter(c => c.dir === 'vertical');
+  
+  // Compute ambisonic components using opposing pairs
+  // X: right - left (opposing)
+  const X = rightElectrodes.reduce((s, c) => s + c.val, 0) - leftElectrodes.reduce((s, c) => s + c.val, 0);
+  
+  // Y: front - back (opposing)
+  const Y = frontElectrodes.reduce((s, c) => s + c.val, 0) - backElectrodes.reduce((s, c) => s + c.val, 0);
+  
+  // Z: top - bottom from vertical electrodes
+  const topElectrodes = centerElectrodes.filter(c => c.z > 0);
+  const bottomElectrodes = centerElectrodes.filter(c => c.z < 0);
+  const Z = topElectrodes.reduce((s, c) => s + c.val, 0) - bottomElectrodes.reduce((s, c) => s + c.val, 0);
+  
+  // W: omnidirectional - average of all (centered)
+  const W = ch.reduce((s, c) => s + c.val, 0) / 8;
+  
+  // 2nd order harmonics (from all electrodes)
+  const allX = ch.map(c => c.x);
+  const allY = ch.map(c => c.y);
+  const allZ = ch.map(c => c.z);
+  
+  const R = ch.reduce((s, c) => s + 0.5 * (3*c.z*c.z - 1) * c.val, 0);
+  const S = ch.reduce((s, c) => s + c.x * c.z * c.val, 0);
+  const T = ch.reduce((s, c) => s + c.y * c.z * c.val, 0);
+  const U = ch.reduce((s, c) => s + 0.5 * (c.x*c.x - c.y*c.y) * c.val, 0);
+  const V = ch.reduce((s, c) => s + c.x * c.y * c.val, 0);
+  
+  // Normalize to reasonable range
+  const scale = 0.5;
+  return [
+    W * scale, 
+    X * scale, 
+    Y * scale, 
+    Z * scale, 
+    R * scale * 0.5, 
+    S * scale * 0.5, 
+    T * scale * 0.5, 
+    U * scale * 0.5, 
+    V * scale * 0.5
+  ];
+}
+
+function drawVectorscope(ambisonicOutput, time) {
+  const canvas = document.getElementById('vectorscope-canvas');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width = canvas.offsetWidth * 2;
+  const h = canvas.height = canvas.offsetHeight * 2;
+  ctx.scale(2, 2);
+  const displayW = canvas.offsetWidth;
+  const displayH = canvas.offsetHeight;
+  const cx = displayW / 2;
+  const cy = displayH / 2;
+  const r = Math.min(displayW, displayH) * 0.45;
+  
+  // Clear with fade effect
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+  ctx.fillRect(0, 0, displayW, displayH);
+  
+  // Draw grid
+  ctx.strokeStyle = '#220505';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+  ctx.stroke();
+  
+  // Draw circles
+  ctx.strokeStyle = '#1a0505';
+  [0.25, 0.5, 0.75].forEach(scale => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  
+  // Add current point to trail
+  if (ambisonicOutput && ambisonicOutput.length >= 4) {
+    const x = ambisonicOutput[1]; // X (ambisonic)
+    const y = ambisonicOutput[2]; // Y (ambisonic)  
+    vectorscopeTrail.push({ x, y, time });
+    if (vectorscopeTrail.length > MAX_TRAIL) vectorscopeTrail.shift();
+  }
+  
+  // Draw trail
+  const vectorScale = 1.5 * vectorscopeZoom;
+  if (vectorscopeTrail.length > 1) {
+    ctx.lineWidth = 2;
+    for (let i = 1; i < vectorscopeTrail.length; i++) {
+      const p0 = vectorscopeTrail[i - 1];
+      const p1 = vectorscopeTrail[i];
+      const alpha = i / vectorscopeTrail.length;
+      ctx.strokeStyle = 'rgba(250, 160, 0, ' + (alpha * 0.8) + ')';
+      ctx.beginPath();
+      ctx.moveTo(cx + p0.x * r * vectorScale, cy + p0.y * r * vectorScale);
+      ctx.lineTo(cx + p1.x * r * vectorScale, cy + p1.y * r * vectorScale);
+      ctx.stroke();
+    }
+  }
+  
+  // Draw current point
+  if (ambisonicOutput && ambisonicOutput.length >= 4) {
+    const x = ambisonicOutput[1];
+    const y = ambisonicOutput[2];
+    ctx.fillStyle = '#fa0';
+    ctx.beginPath();
+    ctx.arc(cx + x * r * vectorScale, cy + y * r * vectorScale, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Glow
+    ctx.shadowColor = '#fa0';
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.arc(cx + x * r * vectorScale, cy + y * r * vectorScale, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Draw input channel hexagons on the circle based on brain position
+  const hexRadius = 14;
+  const hexDistance = r - 20; // Place electrodes inside the circle
+  CHANNEL_MAP.forEach(function(ch, i) {
+    // Use brain position to determine direction (x = left/right, z = front/back)
+    var angle = Math.atan2(ch.brainPos.z, ch.brainPos.x);
+    var hx = cx + Math.cos(angle) * hexDistance;
+    var hy = cy + Math.sin(angle) * hexDistance;
+    
+    ctx.beginPath();
+    for (let j = 0; j < 6; j++) {
+      const ha = (j / 6) * Math.PI * 2;
+      const hx2 = hx + Math.cos(ha) * hexRadius;
+      const hy2 = hy + Math.sin(ha) * hexRadius;
+      if (j === 0) ctx.moveTo(hx2, hy2);
+      else ctx.lineTo(hx2, hy2);
+    }
+    ctx.closePath();
+    
+    var channelVal = currentChannelProcessed ? currentChannelProcessed[i] : 0.5;
+    var activity = Math.abs(channelVal - 0.5) * 2;
+    if (activity > 0.2) {
+      if (channelVal > 0.5) {
+        ctx.fillStyle = 'rgba(250, 170, 0, ' + activity + ')';
+      } else {
+        ctx.fillStyle = 'rgba(230, 0, 3, ' + activity + ')';
+      }
+    } else {
+      ctx.fillStyle = '#111';
+    }
+    ctx.fill();
+    ctx.strokeStyle = ch.color;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    
+    // EEG label
+    ctx.fillStyle = '#fa0';
+    ctx.font = '8px Roboto Condensed';
+    ctx.textAlign = 'center';
+    ctx.fillText(ch.eeg, hx, hy + hexRadius + 9);
+  });
+}
+
+function updateAmbisonicMeters(ambisonicOutput) {
+  if (!ambisonicOutput) return;
+  const maxVal = 1.5;
+  ambisonicOutput.forEach((val, idx) => {
+    const bar = document.getElementById(`amb-meter-${idx}`);
+    if (bar) {
+      const pct = Math.min(100, (Math.abs(val) / maxVal) * 100);
+      bar.style.height = `${pct}%`;
+    }
+  });
+}
+
+// Modal handlers
+document.getElementById('waveform-panel').addEventListener('click', () => {
+  buildAmbisonicMeters();
+  document.getElementById('ambisonic-modal').classList.add('active');
+});
+
+document.getElementById('btn-close-ambisonic').addEventListener('click', () => {
+  document.getElementById('ambisonic-modal').classList.remove('active');
+});
+
+document.getElementById('btn-add-electrode').addEventListener('click', addTenTwentyElectrode);
+
+// Store processed values for vectorscope
+let channelProcessedVals = null;
+let ambisonicOutput = null;
+
+// ============================================================
+// UPDATE BUILDCHANNELLIST TO USE HEXAGONS
+// ============================================================
+function buildChannelList() {
+  const container = document.getElementById('channel-list');
+  container.innerHTML = '';
+  
+  // Sort channels by directional position (based on angle)
+  const sortedChannels = [...CHANNEL_MAP].sort((a, b) => a.angle - b.angle);
+  
+  // Create hexagon grid - 4 columns
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;';
+  
+  sortedChannels.forEach((ch) => {
+    const idx = CHANNEL_MAP.indexOf(ch);
+    const hex = document.createElement('div');
+    hex.style.cssText = `
+      background: #111;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      aspect-ratio: 0.866;
+      width: 100%;
+    `;
+    hex.innerHTML = `
+      <div style="font-size:12px;font-weight:bold;color:${ch.color}">${ch.eeg}</div>
+      <div style="font-size:8px;color:#fa0;">${ch.angle.toFixed(1)}°</div>
+    `;
+    hex.title = `Phase: ${ch.angle.toFixed(1)}° - Click to change`;
+    hex.addEventListener('click', () => {
+      window.replacingChannelIdx = idx;
+      buildTenTwentyGrid();
+      document.getElementById('ten-twenty-modal').classList.add('active');
+    });
+    grid.appendChild(hex);
+  });
+  
+  container.appendChild(grid);
+  
+  window.rebuildChannelDisplay = () => {
+    buildChannelList();
+    repositionAllNodes();
+  };
+}
+
+function repositionAllNodes() {
+  CHANNEL_MAP.forEach((ch, idx) => {
+    const node = channelNodes[idx];
+    if (!node) return;
+    
+    const inputRadius = 4;
+    let x, y, z;
+    
+    if (ch.octonion === '1') {
+      x = 0; y = 3.5; z = 0;
+    } else if (ch.octonion === 'j') {
+      x = 0; y = -3.5; z = 0;
+    } else {
+      const angle = (ch.angle * Math.PI) / 180;
+      x = inputRadius * Math.cos(angle);
+      y = 0;
+      z = inputRadius * Math.sin(angle);
+    }
+    
+    node.position.set(x, y, z);
+    
+    // Update line
+    if (connectionLines[idx]) {
+      const positions = connectionLines[idx].geometry.attributes.position;
+      positions.setXYZ(1, x, y, z);
+      positions.needsUpdate = true;
+    }
+    
+    // Update label
+    if (channelLabels[idx]) {
+      channelLabels[idx].position.set(x, y + 0.6, z);
+    }
+  });
+}
+
+// ============================================================
 // INIT
 // ============================================================
 buildChannelList();
@@ -2554,8 +3432,6 @@ buildDFTOutput();
 
 // Load embedded brain mesh data and initialize
 initThree();
-// Create neural network visualization (uses brainMeshData if available)
-createNeuralNetworkInsideBrain();
 requestAnimationFrame(animate);
 </script>
 </body>
