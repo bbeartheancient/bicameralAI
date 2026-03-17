@@ -1,16 +1,7 @@
-This web app spatializes EEG signals using an octonion matrix with tunnel diode simulation on the m, i, and k matrix inputs.
+This web app spatializes signals using ambisonic formulas. It is setup with EEG 10-20 positions, you can change the input positions.
 
-This is still a work in progress, the initial phase angles are incorrect
+this is still a WiP, i still need to develop the real-time signal and data handling
 
-for correct phase angles; change output phases to:
+UI theme based on https://github.com/bagusindrayana/ews-concept-new?tab=readme-ov-file
 
-F7 = 45
-Fpz = 0
-P7 = 112.5
-F8 = 315
-PZ = 180
-P8 = 247.5
-
-CZ and OZ are always at 0 degrees
-
-you can also just move P7 to 135 degrees if you want
+brain object created from nVidia diffusion model:  https://github.com/NVIDIA-Medtech/NV-Generate-CTMR/tree/main?tab=readme-ov-file
