@@ -1,0 +1,6 @@
+types::_::<impl Deserialize<'de> for types::ClientMessage>::deserialize::__Field
+types::_::<impl Deserialize<'de> for types::CoherenceState>::deserialize::__Field
+types::_::<impl Deserialize<'de> for types::HemisphereConfig>::deserialize::__Field
+types::_::<impl Deserialize<'de> for types::InferenceResult>::deserialize::__Field
+types::_::<impl Deserialize<'de> for types::LMStudioResponse>::deserialize::__Field
+types::_::<impl Deserialize<'de> for types::SignalFeatures>::deserialize::__Field

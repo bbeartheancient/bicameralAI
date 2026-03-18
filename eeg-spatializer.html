@@ -377,21 +377,8 @@ input[type="file"] { display: none; }
 .coherence-mid { color: var(--orange); opacity: 0.7; }
 .coherence-low { color: var(--orange); opacity: 0.4; }
 
-/* Info overlay */
-#info-overlay {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 11px;
-  color: var(--orange);
-  text-align: right;
-  pointer-events: none;
-  text-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
-}
-#info-overlay .value { 
-  color: var(--orange); 
-  text-shadow: 0 0 5px rgba(255, 102, 0, 0.8);
-}
+/* Info overlay - REMOVED to make room for hemisphere windows */
+/* #info-overlay { position: absolute; top: 12px; right: 12px; font-size: 11px; color: var(--orange); text-align: right; pointer-events: none; text-shadow: 0 0 5px rgba(255, 102, 0, 0.5); } */
 
 /* Waveform mini display */
 #waveform-panel {
@@ -429,6 +416,66 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus {
 select option {
   background: #000;
   color: var(--orange);
+}
+
+/* Floating Hemisphere Windows - Anchored to visualization area */
+.hemisphere-window {
+  position: absolute !important;
+  width: 240px;
+  max-height: 150px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid var(--orange);
+  padding: 8px;
+  font-size: 9px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+  pointer-events: none;
+}
+
+.hemisphere-window.left {
+  top: 10px;
+  left: 10px; /* Anchored to top-left of main content area */
+  border-color: var(--red);
+  box-shadow: 0 0 15px rgba(230, 0, 3, 0.5);
+}
+
+.hemisphere-window.right {
+  top: 10px;
+  right: 10px; /* Anchored to top-right of main content area */
+  border-color: #00aaff;
+  box-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
+}
+
+.hemisphere-title {
+  font-weight: bold;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 3px;
+}
+
+.hemisphere-window.left .hemisphere-title {
+  color: var(--red);
+}
+
+.hemisphere-window.right .hemisphere-title {
+  color: #00aaff;
+}
+
+.hemisphere-content {
+  color: #fa0;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.hemisphere-status {
+  font-size: 9px;
+  color: #553300;
+  margin-top: 5px;
+  font-style: italic;
 }
 
 /* Scrollbar */
@@ -709,22 +756,14 @@ select option {
       </div>
     </div>
 
-    <!-- Real-time Connection -->
+    <!-- Real-time Connection (USB Serial Only) -->
     <div class="panel">
-      <div class="panel-title">Real-Time Connection</div>
+      <div class="panel-title">Real-Time Connection (USB Serial)</div>
       <div style="display:flex;gap:6px;margin-bottom:6px;">
-        <button class="btn" id="btn-ws-connect">WebSocket</button>
-        <button class="btn" id="btn-serial-connect">USB Serial</button>
+        <button class="btn" id="btn-serial-connect">Connect USB</button>
         <button class="btn" id="btn-disconnect" style="display:none;">Disconnect</button>
       </div>
-      <div id="ws-config" style="display:none;margin-bottom:6px;">
-        <div style="display:flex;gap:4px;align-items:center;">
-          <span style="font-size:10px;color:#553300;">ws://</span>
-          <input type="text" id="ws-url" value="localhost:8765" style="flex:1;background:#000;border:2px solid #553300;color:#fa0;padding:3px 6px;font-family:'Roboto Condensed';font-size:11px;">
-          <button class="btn" id="btn-ws-go" style="padding:3px 8px;">Go</button>
-        </div>
-      </div>
-      <div id="serial-config" style="display:none;margin-bottom:6px;">
+      <div id="serial-config" style="margin-bottom:6px;">
         <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
           <span style="font-size:10px;color:#553300;">Baud:</span>
           <select id="serial-baud" style="background:#000;border:2px solid #553300;color:#fa0;padding:2px;font-family:'Roboto Condensed';font-size:11px;">
@@ -825,13 +864,19 @@ select option {
   </div>
 
   <div id="viewport">
-    <div id="info-overlay">
-      <div>Frame: <span class="value" id="ov-frame">—</span></div>
-      <div>Channels: <span class="value">8</span></div>
-      <div>Matrix: <span class="value">4×4 FOA</span></div>
-      <div>Z-Vector: <span class="value">m, i, k (TD buffered)</span></div>
-      <div>Z Mode: <span class="value" id="ov-zmode">Z → 0</span></div>
+    <!-- Hemisphere Floating Windows - positioned in viewport corners -->
+    <div id="left-hemisphere-window" class="hemisphere-window left" style="display: none;">
+      <div class="hemisphere-title">Left Hemisphere (Analytical)</div>
+      <div class="hemisphere-content" id="left-hemisphere-content">Waiting for input...</div>
+      <div class="hemisphere-status" id="left-hemisphere-status">Idle</div>
     </div>
+
+    <div id="right-hemisphere-window" class="hemisphere-window right" style="display: none;">
+      <div class="hemisphere-title">Right Hemisphere (Intuitive)</div>
+      <div class="hemisphere-content" id="right-hemisphere-content">Waiting for input...</div>
+      <div class="hemisphere-status" id="right-hemisphere-status">Idle</div>
+    </div>
+
     <div id="plasma-controls">
       <div class="panel-title">Plasma</div>
       <div class="control-row">
@@ -2494,9 +2539,14 @@ function updateVisualization() {
   }
 
   // Update frame counter
-  document.getElementById('frame-counter').textContent = `${currentFrame + 1} / ${eegData.length}`;
-  document.getElementById('ov-frame').textContent = currentFrame + 1;
-  document.getElementById('timeline').value = currentFrame;
+  const frameCounter = document.getElementById('frame-counter');
+  if (frameCounter) frameCounter.textContent = `${currentFrame + 1} / ${eegData.length}`;
+  
+  const ovFrame = document.getElementById('ov-frame');
+  if (ovFrame) ovFrame.textContent = currentFrame + 1;
+  
+  const timeline = document.getElementById('timeline');
+  if (timeline) timeline.value = currentFrame;
 
   // Update tunnel diode diagnostics display
   updateTunnelDiodeUI();
@@ -2511,8 +2561,14 @@ function updateVisualization() {
   drawWaveforms();
 }
 
+let frameSkipCounter = 0;
+const FRAME_SKIP = 2; // Update heavy visuals every 2nd frame (reduce from 256Hz to ~120Hz effective)
+
 function animate(timestamp) {
   requestAnimationFrame(animate);
+  
+  frameSkipCounter++;
+  const shouldUpdateHeavyVisuals = frameSkipCounter % FRAME_SKIP === 0;
 
   if (isPlaying && eegData) {
     const elapsed = timestamp - lastFrameTime;
@@ -2520,11 +2576,24 @@ function animate(timestamp) {
     if (elapsed >= interval) {
       currentFrame = (currentFrame + 1) % eegData.length;
       lastFrameTime = timestamp;
-      updateVisualization();
+      
+      // Only run expensive visualization every Nth frame
+      if (shouldUpdateHeavyVisuals) {
+        updateVisualization();
+        
+        // Also draw waveforms
+        if (typeof drawWaveforms === 'function') {
+          try {
+            drawWaveforms();
+          } catch (e) {
+            // Silently ignore if canvas not ready
+          }
+        }
+      }
     }
   }
 
-  // Update center sphere - plasma core with electric pulsing
+  // Update center sphere - runs every frame (smooth animation)
   if (ambisonicOutput && window.centerSphere) {
     const wVal = ambisonicOutput[0] || 0;
     const wIntensity = Math.abs(wVal);
@@ -2548,7 +2617,8 @@ function animate(timestamp) {
   }
   
   // Update wave paths (2OA directional paths from center to surface)
-  if (ambisonicOutput && wavePaths.length > 0) {
+  // Skip every other frame for performance
+  if (shouldUpdateHeavyVisuals && ambisonicOutput && wavePaths.length > 0) {
     wavePaths.forEach((pathLine, idx) => {
       const basis = pathLine.userData.basis;
       let pathIntensity = 0;
@@ -2571,8 +2641,8 @@ function animate(timestamp) {
     });
   }
   
-  // Update discrete surface glow spots
-  if (ambisonicOutput && window.surfaceGlows) {
+  // Update discrete surface glow spots - skip every other frame
+  if (shouldUpdateHeavyVisuals && ambisonicOutput && window.surfaceGlows) {
     window.surfaceGlows.forEach(function(glow, idx) {
       var basis = glow.userData.basis;
       var compVal = (basis === '1' || basis === 'l') ? ambisonicOutput[0] :
@@ -2832,8 +2902,13 @@ function processRTFrame(values) {
   // Update eegData to point to our live buffer
   eegData = rtBuffer;
   currentFrame = eegData.length - 1;
-  document.getElementById('timeline').max = eegData.length - 1;
-  document.getElementById('timeline').value = currentFrame;
+  
+  // Update timeline if it exists (may not exist in integrated UI)
+  const timeline = document.getElementById('timeline');
+  if (timeline) {
+    timeline.max = eegData.length - 1;
+    timeline.value = currentFrame;
+  }
 
   // FPS counter
   rtFrameCount++;
@@ -2853,6 +2928,15 @@ function processRTFrame(values) {
   if (bufCount) bufCount.textContent = rtBuffer.length;
 
   updateVisualization();
+  
+  // Also draw waveforms immediately for real-time mode
+  if (typeof drawWaveforms === 'function') {
+    try {
+      drawWaveforms();
+    } catch (e) {
+      // Silently ignore if canvas not ready
+    }
+  }
 }
 
 function setRTStatus(connected, text) {
@@ -2860,8 +2944,12 @@ function setRTStatus(connected, text) {
   const statusText = document.getElementById('rt-status-text');
   if (indicator) indicator.style.background = connected ? '#fa0' : '#332200';
   if (statusText) statusText.textContent = text;
-  document.getElementById('btn-disconnect').style.display = connected ? '' : 'none';
-  document.getElementById('status-text').textContent = connected ? 'LIVE: ' + text : text;
+  
+  const btnDisconnect = document.getElementById('btn-disconnect');
+  if (btnDisconnect) btnDisconnect.style.display = connected ? '' : 'none';
+  
+  const statusTextMain = document.getElementById('status-text');
+  if (statusTextMain) statusTextMain.textContent = connected ? 'LIVE: ' + text : text;
 }
 
 // --- WebSocket ---
@@ -2996,23 +3084,8 @@ async function disconnect() {
   document.getElementById('rt-buffer-info').style.display = 'none';
 }
 
-// RT UI event handlers
-document.getElementById('btn-ws-connect').addEventListener('click', () => {
-  document.getElementById('ws-config').style.display =
-    document.getElementById('ws-config').style.display === 'none' ? 'block' : 'none';
-  document.getElementById('serial-config').style.display = 'none';
-});
-
-document.getElementById('btn-serial-connect').addEventListener('click', () => {
-  document.getElementById('serial-config').style.display =
-    document.getElementById('serial-config').style.display === 'none' ? 'block' : 'none';
-  document.getElementById('ws-config').style.display = 'none';
-});
-
-document.getElementById('btn-ws-go').addEventListener('click', connectWebSocket);
-document.getElementById('ws-url').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') connectWebSocket();
-});
+// RT UI event handlers - USB Serial only
+document.getElementById('btn-serial-connect').addEventListener('click', connectSerial);
 document.getElementById('btn-serial-go').addEventListener('click', connectSerial);
 document.getElementById('btn-disconnect').addEventListener('click', disconnect);
 
@@ -3434,5 +3507,9 @@ buildDFTOutput();
 initThree();
 requestAnimationFrame(animate);
 </script>
+<!-- Integrated Brainscan Bridge with Model Selection & Chat -->
+<script src="brainscan-integrated.js"></script>
+<!-- Peer-to-Peer Brain Communication -->
+<script src="brainscan-p2p.js"></script>
 </body>
 </html>

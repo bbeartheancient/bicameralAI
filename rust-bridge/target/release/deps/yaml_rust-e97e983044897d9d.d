@@ -1,0 +1,11 @@
+C:\Users\punch\Documents\GitHub\brainscan\rust-bridge\target\release\deps\yaml_rust-e97e983044897d9d.d: C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\lib.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\emitter.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\parser.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\scanner.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\yaml.rs
+
+C:\Users\punch\Documents\GitHub\brainscan\rust-bridge\target\release\deps\libyaml_rust-e97e983044897d9d.rlib: C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\lib.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\emitter.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\parser.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\scanner.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\yaml.rs
+
+C:\Users\punch\Documents\GitHub\brainscan\rust-bridge\target\release\deps\libyaml_rust-e97e983044897d9d.rmeta: C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\lib.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\emitter.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\parser.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\scanner.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\yaml.rs
+
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\lib.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\emitter.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\parser.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\scanner.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\yaml-rust-0.4.5\src\yaml.rs:

@@ -1,0 +1,71 @@
+[package]
+name = "brainscan-bridge"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance EEG-LMStudio bridge with hemisphere-based model orchestration"
+authors = ["Your Name"]
+license = "MIT"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full", "rt-multi-thread"] }
+tokio-util = "0.7"
+
+# WebSocket support
+tokio-tungstenite = "0.21"
+tungstenite = "0.21"
+
+# HTTP client for LMStudio
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Signal processing
+ndarray = "0.15"
+rayon = "1.8"  # Data parallelism
+
+# Futures
+futures-util = "0.3"
+futures-channel = "0.3"
+futures = "0.3"
+
+# Configuration and CLI
+clap = { version = "4.4", features = ["derive"] }
+config = "0.13"
+dotenv = "0.15"
+
+# Logging and error handling
+tracing = "0.1"
+tracing-subscriber = "0.3"
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Data structures
+dashmap = "5.5"
+async-channel = "2.1"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID generation for peer IDs
+uuid = { version = "1.7", features = ["v4"] }
+
+# WebRTC for peer-to-peer brain-to-brain communication
+webrtc = { version = "0.11", optional = true }
+base64 = { version = "0.22", optional = true }
+
+[features]
+default = []
+webrtc-support = ["webrtc", "base64"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+debug = true
+opt-level = 0

@@ -1,0 +1,129 @@
+{
+  "name": "Brainscan Bicameral Inference Optimizer",
+  "description": "Configuration for optimizing bicameral (dual-hemisphere) inference in LM Studio",
+  "version": "1.0.0",
+  "bicameral_settings": {
+    "enabled": true,
+    "hemisphere_configuration": {
+      "left_hemisphere": {
+        "model_id": "qwen2.5-0.5b-instruct",
+        "role": "analytical",
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "system_prompt": "You are the LEFT hemisphere of a bicameral brain. Process analytically, verbally, with details and logic. Connected to EEG channels F3, C3, P3, P7. Approach problems sequentially and methodically.",
+        "optimization_settings": {
+          "batch_size": 32,
+          "learning_rate": 0.0001,
+          "architecture_depth": "deep",
+          "filter_strategy": "aggressive"
+        }
+      },
+      "right_hemisphere": {
+        "model_id": "qwen3.5-0.8b-claude-4.6-opus-reasoning-distilled",
+        "role": "intuitive",
+        "temperature": 0.8,
+        "max_tokens": 2048,
+        "system_prompt": "You are the RIGHT hemisphere of a bicameral brain. Process holistically, intuitively, with patterns and creativity. Connected to EEG channels F4, C4, PZ, P8. Look for patterns and big-picture connections.",
+        "optimization_settings": {
+          "batch_size": 16,
+          "learning_rate": 0.0002,
+          "architecture_depth": "moderate",
+          "filter_strategy": "permissive"
+        }
+      },
+      "comparator_model": {
+        "model_id": "qwen2.5-0.5b-instruct",
+        "role": "synthesizer",
+        "temperature": 0.75,
+        "max_tokens": 2048,
+        "system_prompt": "You are a SYNTHESIZER combining perspectives from both brain hemispheres. Integrate analytical and intuitive responses into a single coherent, balanced answer."
+      }
+    },
+    "coherence_analysis": {
+      "enabled": true,
+      "coherence_threshold": 0.85,
+      "dominant_hemisphere_detection": true,
+      "hemispheric_balance_target": 0.5,
+      "verification_steps": [
+        "Measure left hemisphere coherence",
+        "Measure right hemisphere coherence",
+        "Calculate overall coherence score",
+        "Alert if below threshold"
+      ]
+    },
+    "data_architecture": {
+      "train_test_split": {
+        "ratio": "50/50",
+        "balanced_across_hemispheres": true,
+        "stratified_sampling": true
+      },
+      "optimization_strategy": {
+        "method": "grid_search_bayesian",
+        "priority": "coherence_maximization",
+        "hyperparameters": {
+          "temperature_range": [0.6, 0.9],
+          "max_tokens_range": [1024, 4096],
+          "batch_size_options": [16, 32, 64]
+        }
+      }
+    },
+    "inference_settings": {
+      "mode": "bicameral_parallel",
+      "synthesis_required": true,
+      "cache_enabled": true,
+      "cache_ttl_seconds": 300,
+      "timeout_seconds": 60
+    },
+    "monitoring": {
+      "track_hemisphere_contribution": true,
+      "track_coherence_over_time": true,
+      "track_inference_latency": true,
+      "alert_on_imbalance": true,
+      "metrics": [
+        "left_contribution_percentage",
+        "right_contribution_percentage",
+        "overall_coherence",
+        "synthesis_quality_score"
+      ]
+    },
+    "integration": {
+      "smooth_inference_across_channels": true,
+      "pattern_detection": true,
+      "dual_hemisphere_validation": true,
+      "correlation_analysis": true
+    }
+  },
+  "lmstudio_integration": {
+    "api_endpoint": "http://localhost:1234/v1",
+    "model_loading": {
+      "preload_models": [
+        "qwen2.5-0.5b-instruct",
+        "qwen3.5-0.8b-claude-4.6-opus-reasoning-distilled"
+      ],
+      "gpu_layers": 35,
+      "context_length": 4096
+    },
+    "inference_parameters": {
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "top_k": 40,
+      "repeat_penalty": 1.1,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0
+    }
+  },
+  "brainscan_bridge": {
+    "websocket_url": "ws://localhost:8766",
+    "eeg_simulation": {
+      "enabled": true,
+      "sample_rate": 256,
+      "channels": 8,
+      "spatialization_enabled": true
+    },
+    "peer_to_peer": {
+      "enabled": true,
+      "brain_sharing": true,
+      "chat_sharing": true
+    }
+  }
+}

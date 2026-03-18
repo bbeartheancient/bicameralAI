@@ -1,0 +1,22 @@
+{
+  "name": "brainscan-bicameral-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for Brainscan Bicameral Inference",
+  "main": "mcp-bicameral-server.js",
+  "scripts": {
+    "start": "node mcp-bicameral-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "ws": "^8.14.2"
+  },
+  "keywords": [
+    "mcp",
+    "brainscan",
+    "bicameral",
+    "inference",
+    "lmstudio"
+  ],
+  "author": "Brainscan Team",
+  "license": "MIT"
+}

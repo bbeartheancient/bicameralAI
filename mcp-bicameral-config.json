@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "brainscan-bicameral": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\punch\\Documents\\GitHub\\brainscan\\mcp-bicameral-server.js"
+      ],
+      "env": {
+        "LMSTUDIO_URL": "http://localhost:1234",
+        "BRIDGE_WS_URL": "ws://localhost:8766",
+        "BICAMERAL_CONFIG_PATH": "C:\\Users\\punch\\Documents\\GitHub\\brainscan\\bicameral-lmstudio-config.json"
+      },
+      "description": "Brainscan Bicameral Inference Optimizer - Manages dual-hemisphere model orchestration",
+      "alwaysAllow": [
+        "query_left_hemisphere",
+        "query_right_hemisphere",
+        "synthesize_responses",
+        "get_coherence_metrics",
+        "configure_hemisphere_models",
+        "start_eeg_stream",
+        "share_brain_data",
+        "connect_to_peer"
+      ]
+    }
+  }
+}

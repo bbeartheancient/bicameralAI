@@ -1,0 +1,11 @@
+C:\Users\punch\Documents\GitHub\brainscan\rust-bridge\target\release\deps\dotenv-c17b68f282310b07.d: C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\lib.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\parse.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\errors.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\iter.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\find.rs
+
+C:\Users\punch\Documents\GitHub\brainscan\rust-bridge\target\release\deps\libdotenv-c17b68f282310b07.rlib: C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\lib.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\parse.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\errors.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\iter.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\find.rs
+
+C:\Users\punch\Documents\GitHub\brainscan\rust-bridge\target\release\deps\libdotenv-c17b68f282310b07.rmeta: C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\lib.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\parse.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\errors.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\iter.rs C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\find.rs
+
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\lib.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\parse.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\errors.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\iter.rs:
+C:\Users\punch\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dotenv-0.15.0\src\find.rs:
