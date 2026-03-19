@@ -207,13 +207,15 @@ class BicameralRestBridge {
                                         role: 'assistant',
                                         content: msg.message
                                     },
+                                    logprobs: null,
                                     finish_reason: 'stop'
                                 }],
                                 usage: {
                                     prompt_tokens: 0,
                                     completion_tokens: msg.message?.split(/\s+/)?.length || 0,
                                     total_tokens: msg.message?.split(/\s+/)?.length || 0
-                                }
+                                },
+                                system_fingerprint: 'bicameral-ai-v1'
                             };
 
                             console.log('[REST Bridge] Sending response to OpenCode Desktop');
