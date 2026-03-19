@@ -251,6 +251,9 @@ class BicameralRestBridge {
                             
                             console.log(`[REST Bridge] Final comparator response received, length: ${msg.message?.length || 0}`);
                             
+                            // Format the message for better display
+                            let formattedMessage = this.formatMessage(msg.message);
+                            
                             // Convert to OpenAI format
                             const openaiResponse = {
                                 id: `chatcmpl-${Date.now()}`,
@@ -261,15 +264,15 @@ class BicameralRestBridge {
                                     index: 0,
                                     message: {
                                         role: 'assistant',
-                                        content: msg.message
+                                        content: formattedMessage
                                     },
                                     logprobs: null,
                                     finish_reason: 'stop'
                                 }],
                                 usage: {
                                     prompt_tokens: 0,
-                                    completion_tokens: msg.message?.split(/\s+/)?.length || 0,
-                                    total_tokens: msg.message?.split(/\s+/)?.length || 0
+                                    completion_tokens: formattedMessage?.split(/\s+/)?.length || 0,
+                                    total_tokens: formattedMessage?.split(/\s+/)?.length || 0
                                 },
                                 system_fingerprint: 'bicameral-ai-v1'
                             };
@@ -305,6 +308,40 @@ class BicameralRestBridge {
                 }
             }, 120000);
         });
+    }
+
+    /**
+     * Format message for better readability
+     * Fixes common formatting issues from model output
+     */
+    formatMessage(message) {
+        if (!message) return '';
+        
+        // Fix: Add space after [Combined] header if missing
+        message = message.replace(/\[Combined\] ([^\n]+)(?=[A-Za-z])/g, '\[Combined\] $1\n\n');
+        
+        // Fix: Ensure proper spacing after headers (###, ####)
+        message = message.replace(/^(#{1,4}\s.+?)(?=\n[A-Za-z])/gm, '$1\n');
+        
+        // Fix: Add blank lines between list items and paragraphs
+        message = message.replace(/(\n\*\s.+?\n)(?=\*\s)/g, '$1\n');
+        
+        // Fix: Add spacing around code blocks
+        message = message.replace(/```(\w+)?\n/g, '\n```$1\n');
+        message = message.replace(/\n```\n?/g, '\n```\n\n');
+        
+        // Fix: Ensure double newline before major sections (numbered items)
+        message = message.replace(/\n(\d+\.\s)/g, '\n\n$1');
+        
+        // Clean up excessive newlines (more than 2)
+        message = message.replace(/\n{3,}/g, '\n\n');
+        
+        // Ensure message ends with newline
+        if (!message.endsWith('\n')) {
+            message += '\n';
+        }
+        
+        return message;
     }
 
     /**
