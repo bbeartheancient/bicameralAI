@@ -317,32 +317,20 @@ class BicameralRestBridge {
     formatMessage(message) {
         if (!message) return '';
         
-        // Simple but effective: ensure double newlines between major sections
-        // This forces proper paragraph breaks in any markdown renderer
-        
         // Step 1: Normalize line endings
         message = message.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         
-        // Step 2: Add clear separation after [Combined] line
-        message = message.replace(/^(\[Combined\].*)$/m, '$1\n');
+        // Step 2: Add blank line after [Combined] header
+        message = message.replace(/^(\[Combined\].*?)$/m, '$1\n');
         
-        // Step 3: Add spacing before headers (### or ##)
-        message = message.replace(/\n+(##+\s)/g, '\n\n$1');
+        // Step 3: Convert single newlines to double newlines for markdown
+        // This forces paragraph breaks in OpenCode Desktop
+        message = message.replace(/\n/g, '\n\n');
         
-        // Step 4: Add spacing before bullet points
-        message = message.replace(/\n([*-]\s)/g, '\n\n$1');
+        // Step 4: Clean up excessive newlines (more than 3)
+        message = message.replace(/\n{5,}/g, '\n\n\n');
         
-        // Step 5: Add spacing before numbered lists (1., 2., etc.)
-        message = message.replace(/\n(\d+\.\s)/g, '\n\n$1');
-        
-        // Step 6: Ensure code blocks have spacing
-        message = message.replace(/```\w*\n/g, '\n```\n');
-        message = message.replace(/\n```/g, '\n```\n');
-        
-        // Step 7: Remove excessive blank lines (keep max 2)
-        message = message.replace(/\n{4,}/g, '\n\n\n');
-        
-        return message.trim() + '\n';
+        return message.trim();
     }
 
     /**
