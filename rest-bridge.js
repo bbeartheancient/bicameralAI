@@ -317,29 +317,46 @@ class BicameralRestBridge {
     formatMessage(message) {
         if (!message) return '';
         
-        // Fix: Add space after [Combined] header if missing
-        message = message.replace(/\[Combined\] ([^\n]+)(?=[A-Za-z])/g, '\[Combined\] $1\n\n');
+        // Log the raw message structure for debugging
+        console.log(`[REST Bridge] Raw message first 200 chars: ${message.substring(0, 200)}`);
+        console.log(`[REST Bridge] Raw message contains \\n: ${message.includes('\n')}`);
+        console.log(`[REST Bridge] Raw message contains \\r: ${message.includes('\r')}`);
         
-        // Fix: Ensure proper spacing after headers (###, ####)
-        message = message.replace(/^(#{1,4}\s.+?)(?=\n[A-Za-z])/gm, '$1\n');
+        // First, normalize all line endings to \n
+        message = message.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         
-        // Fix: Add blank lines between list items and paragraphs
-        message = message.replace(/(\n\*\s.+?\n)(?=\*\s)/g, '$1\n');
+        // Fix: Add space after [Combined] header - look for pattern without newline
+        message = message.replace(/(\[Combined\][^\n]+?)(?=\s*#{1,4}\s)/, '$1\n\n');
+        
+        // Fix: Ensure proper spacing after all headers (### or ####)
+        // Add newline after headers if they're followed immediately by text
+        message = message.replace(/^(#{1,4}\s+.+?)(\n)(?=[A-Za-z])/gm, '$1$2\n');
+        
+        // Fix: Add blank line before bullet points if not already present
+        message = message.replace(/([^\n])(\n\*\s)/g, '$1\n$2');
         
         // Fix: Add spacing around code blocks
-        message = message.replace(/```(\w+)?\n/g, '\n```$1\n');
-        message = message.replace(/\n```\n?/g, '\n```\n\n');
+        message = message.replace(/([^\n])```/g, '$1\n```');
+        message = message.replace(/```\n?([^\n])/g, '```\n\n$1');
         
-        // Fix: Ensure double newline before major sections (numbered items)
-        message = message.replace(/\n(\d+\.\s)/g, '\n\n$1');
+        // Fix: Add double newline before numbered sections (### followed by text then 1. or similar)
+        message = message.replace(/\n(#{1,4}\s.+?\n)(?=\d+\.\s)/g, '\n$1\n');
         
-        // Clean up excessive newlines (more than 2)
+        // Fix: Ensure there's a newline between major sections (### headers)
+        message = message.replace(/([^\n])\n(#{1,4}\s)/g, '$1\n\n$2');
+        
+        // Clean up excessive newlines (more than 2 consecutive)
         message = message.replace(/\n{3,}/g, '\n\n');
         
-        // Ensure message ends with newline
+        // Trim whitespace
+        message = message.trim();
+        
+        // Ensure message ends with single newline
         if (!message.endsWith('\n')) {
             message += '\n';
         }
+        
+        console.log(`[REST Bridge] Formatted message first 200 chars: ${message.substring(0, 200)}`);
         
         return message;
     }
