@@ -117,12 +117,21 @@ class BicameralRestBridge {
             try {
                 console.log('[REST Bridge] Received chat completion request');
                 const request = JSON.parse(body);
-                console.log(`[REST Bridge] Model: ${request.model}, Messages: ${request.messages?.length || 0}`);
+                console.log(`[REST Bridge] Model: ${request.model}, Messages: ${request.messages?.length || 0}, Stream: ${request.stream}`);
+                
+                // Check if client wants streaming
+                if (request.stream) {
+                    await this.handleStreaming(req, res, request);
+                    return;
+                }
                 
                 const response = await this.processChatCompletion(request);
                 
                 console.log(`[REST Bridge] Sending HTTP 200 response, content length: ${JSON.stringify(response).length}`);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
                 res.end(JSON.stringify(response));
                 console.log('[REST Bridge] HTTP response sent successfully');
             } catch (error) {
@@ -136,6 +145,53 @@ class BicameralRestBridge {
                 }));
             }
         });
+    }
+
+    /**
+     * Handle streaming chat completions
+     */
+    async handleStreaming(req, res, request) {
+        console.log('[REST Bridge] Handling streaming request');
+        
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        });
+        
+        try {
+            const response = await this.processChatCompletion(request);
+            const content = response.choices[0].message.content;
+            
+            // Send as server-sent events (SSE)
+            const chunks = content.match(/.{1,100}/g) || [content]; // Split into 100-char chunks
+            
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = {
+                    id: response.id,
+                    object: 'chat.completion.chunk',
+                    created: response.created,
+                    model: response.model,
+                    choices: [{
+                        index: 0,
+                        delta: {
+                            content: chunks[i]
+                        },
+                        finish_reason: i === chunks.length - 1 ? 'stop' : null
+                    }]
+                };
+                
+                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+            }
+            
+            res.write('data: [DONE]\n\n');
+            res.end();
+            console.log('[REST Bridge] Streaming response completed');
+        } catch (error) {
+            console.error('[REST Bridge] Streaming error:', error);
+            res.write(`data: ${JSON.stringify({error: error.message})}\n\n`);
+            res.end();
+        }
     }
 
     /**
