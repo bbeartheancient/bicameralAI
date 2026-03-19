@@ -731,8 +731,12 @@
                     </select>
                 </div>
                 <div style="margin-bottom: 8px;">
-                    <label style="font-size: 10px; color: #888;">Max Tokens:</label>
-                    <input type="number" id="max-tokens" value="4096" min="1" max="8192" style="width: 80px; font-size: 10px; background: #1a1a1a; color: #0f0; border: 1px solid #333; padding: 4px;">
+                    <label style="font-size: 10px; color: #888;">Left Max Tokens:</label>
+                    <input type="number" id="left-max-tokens" value="2048" min="1" max="8192" style="width: 60px; font-size: 10px; background: #1a1a1a; color: #0f0; border: 1px solid #333; padding: 4px;">
+                    <label style="font-size: 10px; color: #888; margin-left: 8px;">Right:</label>
+                    <input type="number" id="right-max-tokens" value="2048" min="1" max="8192" style="width: 60px; font-size: 10px; background: #1a1a1a; color: #0f0; border: 1px solid #333; padding: 4px;">
+                    <label style="font-size: 10px; color: #888; margin-left: 8px;">Comp:</label>
+                    <input type="number" id="comparator-max-tokens" value="8192" min="1" max="16384" style="width: 60px; font-size: 10px; background: #1a1a1a; color: #0f0; border: 1px solid #333; padding: 4px;">
                 </div>
                 <div class="btn-row">
                     <button class="btn" id="btn-set-models">Set Models</button>

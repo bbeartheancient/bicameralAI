@@ -252,7 +252,14 @@ pub enum ClientMessage {
     #[serde(rename = "set_comparator_model")]
     SetComparatorModel { model_id: String },
     #[serde(rename = "chat_message")]
-    ChatMessage { message: String, hemisphere: Option<Hemisphere>, mode: Option<String>, max_tokens: Option<u32> },
+    ChatMessage { 
+        message: String, 
+        hemisphere: Option<Hemisphere>, 
+        mode: Option<String>, 
+        max_tokens_left: Option<u32>,
+        max_tokens_right: Option<u32>,
+        max_tokens_comparator: Option<u32>,
+    },
     #[serde(rename = "get_models")]
     GetModels,
     #[serde(rename = "start_eeg")]

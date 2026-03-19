@@ -109,7 +109,7 @@
         parallelProcessing: true, // Enable parallel componentization
         asyncProcessingEnabled: true, // Enable async signal exchange
         decisionThresholds: { accept: 0.7, revise: 0.4, reject: 0.2 }, // Decision grading
-        models: { left: null, right: null, comparator: null, available: [], maxTokens: 4096 },
+        models: { left: null, right: null, comparator: null, available: [], leftMaxTokens: 2048, rightMaxTokens: 2048, comparatorMaxTokens: 8192 },
         chatHistory: [],
         pendingResponses: { left: null, right: null, query: null },
         currentFrame: 0,
@@ -3961,13 +3961,17 @@
         const leftSelect = document.getElementById('left-model');
         const rightSelect = document.getElementById('right-model');
         const comparatorSelect = document.getElementById('comparator-model');
-        const maxTokensInput = document.getElementById('max-tokens');
+        const leftMaxTokens = document.getElementById('left-max-tokens');
+        const rightMaxTokens = document.getElementById('right-max-tokens');
+        const comparatorMaxTokens = document.getElementById('comparator-max-tokens');
         
         const selections = {
             left: leftSelect?.value || '',
             right: rightSelect?.value || '',
             comparator: comparatorSelect?.value || '',
-            maxTokens: parseInt(maxTokensInput?.value) || 4096,
+            leftMaxTokens: parseInt(leftMaxTokens?.value) || 2048,
+            rightMaxTokens: parseInt(rightMaxTokens?.value) || 2048,
+            comparatorMaxTokens: parseInt(comparatorMaxTokens?.value) || 8192,
             timestamp: Date.now()
         };
         
@@ -4017,7 +4021,9 @@
             const leftSelect = document.getElementById('left-model');
             const rightSelect = document.getElementById('right-model');
             const comparatorSelect = document.getElementById('comparator-model');
-            const maxTokensInput = document.getElementById('max-tokens');
+            const leftMaxTokens = document.getElementById('left-max-tokens');
+            const rightMaxTokens = document.getElementById('right-max-tokens');
+            const comparatorMaxTokens = document.getElementById('comparator-max-tokens');
             
             // Restore valid models
             if (leftSelect && selections.left) {
@@ -4033,10 +4039,15 @@
                 state.models.comparator = selections.comparator;
             }
             
-            // Restore max tokens setting
-            if (maxTokensInput && selections.maxTokens) {
-                maxTokensInput.value = selections.maxTokens;
-                state.models.maxTokens = selections.maxTokens;
+            // Restore max tokens settings
+            if (leftMaxTokens && selections.leftMaxTokens) {
+                leftMaxTokens.value = selections.leftMaxTokens;
+            }
+            if (rightMaxTokens && selections.rightMaxTokens) {
+                rightMaxTokens.value = selections.rightMaxTokens;
+            }
+            if (comparatorMaxTokens && selections.comparatorMaxTokens) {
+                comparatorMaxTokens.value = selections.comparatorMaxTokens;
             }
             
             // Auto-send model configuration if restored
@@ -4339,17 +4350,19 @@
         
         console.log(`[DEBUG] Sending chat with mode: ${cg.mode} (enabled: ${cg.enabled})`);
         
-        // Get max tokens from input
-        const maxTokensInput = document.getElementById('max-tokens');
-        const maxTokens = parseInt(maxTokensInput?.value) || 4096;
-        state.models.maxTokens = maxTokens;
+        // Get max tokens from inputs
+        const leftMaxTokens = parseInt(document.getElementById('left-max-tokens')?.value) || 2048;
+        const rightMaxTokens = parseInt(document.getElementById('right-max-tokens')?.value) || 2048;
+        const comparatorMaxTokens = parseInt(document.getElementById('comparator-max-tokens')?.value) || 8192;
         
         send({
             type: 'chat_message',
             message: message,
             hemisphere: 'both',
             mode: cg.mode,  // 'standard' or 'internal_analysis'
-            max_tokens: maxTokens,  // Max tokens for this query
+            max_tokens_left: leftMaxTokens,
+            max_tokens_right: rightMaxTokens,
+            max_tokens_comparator: comparatorMaxTokens,
             weights: {
                 left: bw.left,
                 right: bw.right,
