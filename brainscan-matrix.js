@@ -109,7 +109,7 @@
         parallelProcessing: true, // Enable parallel componentization
         asyncProcessingEnabled: true, // Enable async signal exchange
         decisionThresholds: { accept: 0.7, revise: 0.4, reject: 0.2 }, // Decision grading
-        models: { left: null, right: null, comparator: null, available: [] },
+        models: { left: null, right: null, comparator: null, available: [], maxTokens: 4096 },
         chatHistory: [],
         pendingResponses: { left: null, right: null, query: null },
         currentFrame: 0,
@@ -3961,11 +3961,13 @@
         const leftSelect = document.getElementById('left-model');
         const rightSelect = document.getElementById('right-model');
         const comparatorSelect = document.getElementById('comparator-model');
+        const maxTokensInput = document.getElementById('max-tokens');
         
         const selections = {
             left: leftSelect?.value || '',
             right: rightSelect?.value || '',
             comparator: comparatorSelect?.value || '',
+            maxTokens: parseInt(maxTokensInput?.value) || 4096,
             timestamp: Date.now()
         };
         
@@ -4015,6 +4017,7 @@
             const leftSelect = document.getElementById('left-model');
             const rightSelect = document.getElementById('right-model');
             const comparatorSelect = document.getElementById('comparator-model');
+            const maxTokensInput = document.getElementById('max-tokens');
             
             // Restore valid models
             if (leftSelect && selections.left) {
@@ -4028,6 +4031,12 @@
             if (comparatorSelect && selections.comparator) {
                 comparatorSelect.value = selections.comparator;
                 state.models.comparator = selections.comparator;
+            }
+            
+            // Restore max tokens setting
+            if (maxTokensInput && selections.maxTokens) {
+                maxTokensInput.value = selections.maxTokens;
+                state.models.maxTokens = selections.maxTokens;
             }
             
             // Auto-send model configuration if restored
@@ -4330,11 +4339,17 @@
         
         console.log(`[DEBUG] Sending chat with mode: ${cg.mode} (enabled: ${cg.enabled})`);
         
+        // Get max tokens from input
+        const maxTokensInput = document.getElementById('max-tokens');
+        const maxTokens = parseInt(maxTokensInput?.value) || 4096;
+        state.models.maxTokens = maxTokens;
+        
         send({
             type: 'chat_message',
             message: message,
             hemisphere: 'both',
             mode: cg.mode,  // 'standard' or 'internal_analysis'
+            max_tokens: maxTokens,  // Max tokens for this query
             weights: {
                 left: bw.left,
                 right: bw.right,

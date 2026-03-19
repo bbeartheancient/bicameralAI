@@ -205,14 +205,14 @@ impl ModelOrchestrator {
                 model_id: left_model,
                 purpose: "pattern".to_string(),
                 temperature: 0.3,
-                max_tokens: 0,
+                max_tokens: 2048,
             },
             HemisphereConfig {
                 hemisphere: Hemisphere::Right,
                 model_id: right_model,
                 purpose: "anomaly".to_string(),
                 temperature: 0.2,
-                max_tokens: 0,
+                max_tokens: 2048,
             },
         ]
     }

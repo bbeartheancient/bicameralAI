@@ -21,6 +21,7 @@ pub struct ChatQuery {
     pub client_addr: SocketAddr,
     pub query_id: String,
     pub mode: Option<String>,
+    pub max_tokens: Option<u32>,
 }
 
 /// Pending query waiting for both hemisphere responses
@@ -364,6 +365,7 @@ impl InferenceServer {
                         client_addr,
                         query_id: format!("{}_left", query_id),
                         mode: query.mode.clone(),
+                        max_tokens: query.max_tokens,
                     };
                     
                     let right_query = ChatQuery {
@@ -372,6 +374,7 @@ impl InferenceServer {
                         client_addr,
                         query_id: format!("{}_right", query_id),
                         mode: query.mode.clone(),
+                        max_tokens: query.max_tokens,
                     };
                     
                     // Process both queries
@@ -411,6 +414,7 @@ impl InferenceServer {
                         pending_queries.clone(),
                         query_cache.clone(),
                         query.mode.clone(),
+                        query.max_tokens,
                     ));
                 } else {
                     // Single hemisphere query - process directly
@@ -711,7 +715,8 @@ async fn process_hemisphere_query(
         },
     ];
     
-    let response = match lmstudio.chat_completion(&model, messages, 0.7, 0).await {
+    let max_tokens = query.max_tokens.unwrap_or(2048);
+    let response = match lmstudio.chat_completion(&model, messages, 0.7, max_tokens).await {
         Ok(resp) => {
             // Cache the response
             let cache_entry = ChatResponseCacheEntry {
@@ -791,6 +796,7 @@ async fn process_comparator(
     pending_queries: Arc<RwLock<HashMap<String, PendingQuery>>>,
     query_cache: Arc<QueryCache<ChatResponseCacheEntry>>,
     mode: Option<String>,
+    max_tokens: Option<u32>,
 ) {
     // Wait for both responses (with timeout)
     let max_wait = std::time::Duration::from_secs(60);
@@ -942,7 +948,8 @@ Query: {}
         },
     ];
     
-    match lmstudio.chat_completion(&comparator_model, messages, 0.7, 0).await {
+    let max_tokens = max_tokens.unwrap_or(4096);
+    match lmstudio.chat_completion(&comparator_model, messages, 0.7, max_tokens).await {
         Ok(combined_response) => {
             // Cache the combined response
             let full_response = format!(
@@ -1194,7 +1201,8 @@ async fn process_single_query(
         },
     ];
     
-    match lmstudio.chat_completion(&model, messages, 0.7, 0).await {
+    let max_tokens = query.max_tokens.unwrap_or(2048);
+    match lmstudio.chat_completion(&model, messages, 0.7, max_tokens).await {
         Ok(response) => {
             // Cache the response
             let cache_entry = ChatResponseCacheEntry {
@@ -1353,14 +1361,14 @@ async fn handle_client(
                                     model_id: left,
                                     purpose: "analytical".to_string(),
                                     temperature: 0.7,
-                                    max_tokens: 0,
+                                    max_tokens: 2048,
                                 },
                                 HemisphereConfig {
                                     hemisphere: Hemisphere::Right,
                                     model_id: right,
                                     purpose: "intuitive".to_string(),
                                     temperature: 0.7,
-                                    max_tokens: 0,
+                                    max_tokens: 2048,
                                 },
                             ];
                             
@@ -1401,10 +1409,11 @@ async fn handle_client(
                             *cm = model_id.clone();
                             info!("Client {} set comparator model to {}", addr, model_id);
                         }
-                        ClientMessage::ChatMessage { message, hemisphere, mode } => {
+                        ClientMessage::ChatMessage { message, hemisphere, mode, max_tokens } => {
                             let mode_str = mode.as_ref().map(|m| m.as_str()).unwrap_or("none");
-                            info!("Chat from {} (mode: {}): {}", addr, mode_str, message);
-                            println!("[CHAT DEBUG] Received chat message from {} with mode: {:?}", addr, mode);
+                            let tokens_str = max_tokens.map(|t| t.to_string()).unwrap_or_else(|| "default".to_string());
+                            info!("Chat from {} (mode: {}, tokens: {}): {}", addr, mode_str, tokens_str, message);
+                            println!("[CHAT DEBUG] Received chat message from {} with mode: {:?}, max_tokens: {:?}", addr, mode, max_tokens);
                             
                             // Generate unique query ID for tracking
                             let query_id = format!("{}_{}", addr.port(), std::time::SystemTime::now()
@@ -1419,6 +1428,7 @@ async fn handle_client(
                                 client_addr: addr,
                                 query_id,
                                 mode,
+                                max_tokens,
                             };
                             
                             if let Err(e) = chat_tx.send(query).await {
