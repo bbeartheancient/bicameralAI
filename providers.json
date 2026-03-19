@@ -1,15 +1,29 @@
 {
-  "providers": [
-    {
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "bicameral": {
+      "npm": "@ai-sdk/openai-compatible",
       "name": "Bicameral AI",
-      "type": "custom",
-      "module": "./bicameral-provider.js",
-      "config": {
-        "bridgeUrl": "ws://localhost:9001",
-        "defaultMode": "standard",
-        "timeout": 60000
+      "options": {
+        "baseURL": "http://localhost:9001/v1"
+      },
+      "models": {
+        "bicameral-standard": {
+          "name": "Bicameral AI (Standard Mode)",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          }
+        },
+        "bicameral-technical": {
+          "name": "Bicameral AI (Technical Mode)",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          }
+        }
       }
     }
-  ],
-  "defaultProvider": "Bicameral AI"
+  }
 }
+

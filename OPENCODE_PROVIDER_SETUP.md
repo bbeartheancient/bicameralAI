@@ -2,13 +2,14 @@
 
 ## Overview
 
-This guide shows you how to add **Bicameral AI** as a custom model provider in OpenCode Desktop. Once installed, it appears as a single model option in the dropdown menu, alongside other AI models.
+This guide shows you how to add **Bicameral AI** as a custom model provider in OpenCode Desktop. Once installed, it appears as model options in the dropdown menu.
 
 ## What You Get
 
-✅ Bicameral AI appears as **"Bicameral AI"** in the model dropdown  
+✅ Bicameral AI appears as **two model options** in the dropdown:
+   - "Bicameral AI (Standard Mode)" - Creative/general responses
+   - "Bicameral AI (Technical Mode)" - Technical QAM/FOA analysis
 ✅ Uses both Left and Right hemispheres automatically  
-✅ Toggle between Standard Mode (creative) and Internal Analysis Mode (technical)  
 ✅ No code changes to OpenCode Desktop required  
 ✅ Works with OpenCode Desktop v1.2.26 on Windows
 
@@ -17,240 +18,330 @@ This guide shows you how to add **Bicameral AI** as a custom model provider in O
 1. **Bicameral AI Bridge running** (rust-bridge on port 9001)
 2. **LM Studio** with models loaded
 3. **OpenCode Desktop v1.2.26** installed
+4. **Node.js** installed (for REST bridge)
 
-## Installation Steps
+## Architecture
 
-### Step 1: Locate Your OpenCode Desktop Config Folder
-
-**Windows:**
 ```
-%APPDATA%\OpenCode Desktop\
-```
-Or manually:
-```
-C:\Users\[YourUsername]\AppData\Roaming\OpenCode Desktop\
+OpenCode Desktop → REST API (port 9002) → WebSocket (port 9001) → Bicameral AI
 ```
 
-### Step 2: Copy Required Files
+OpenCode Desktop requires OpenAI-compatible REST API. We provide a bridge that:
+1. Exposes REST endpoint on port 9002
+2. Converts REST requests to WebSocket messages
+3. Returns OpenAI-formatted responses
 
-Copy these **3 files** from the bicameralAI repo to your OpenCode Desktop config folder:
+## Quick Start (5 minutes)
 
-1. `opencode-api.js` - Core API client
-2. `bicameral-provider.js` - Model provider wrapper  
-3. `providers.json` - Provider registration (optional, see Step 3)
+### Step 1: Start All Services
 
-**Copy to:**
+**Terminal 1 - Start Bicameral AI Bridge:**
+```bash
+cd rust-bridge
+cargo run
 ```
-%APPDATA%\OpenCode Desktop\
-├── opencode-api.js
-├── bicameral-provider.js
-└── providers.json (optional)
+
+**Terminal 2 - Start LM Studio**
+- Open LM Studio
+- Load your models
+- Ensure server is running on port 1234
+
+**Terminal 3 - Start REST Bridge:**
+```bash
+cd C:\Users\punch\Documents\GitHub\bicameralAI
+node rest-bridge.js
 ```
 
-### Step 3: Register the Provider (Choose ONE method)
+You should see:
+```
+✓ Bicameral REST Bridge running on http://localhost:9002/v1
+✓ Bridging to WebSocket: ws://localhost:9001
+```
 
-#### Method A: Using OpenCode Desktop UI (Recommended)
+### Step 2: Configure OpenCode Desktop
 
-1. **Open OpenCode Desktop**
-2. **Go to Settings** (gear icon or File → Settings)
-3. **Navigate to:** Model Providers or AI Settings
-4. **Click:** "Add Provider" or "Custom Provider"
-5. **Select:** "Local File" or "Custom Module"
-6. **Browse to:** `%APPDATA%\OpenCode Desktop\bicameral-provider.js`
-7. **Set Display Name:** `Bicameral AI`
-8. **Configuration:**
-   ```json
-   {
-     "bridgeUrl": "ws://localhost:9001",
-     "defaultMode": "standard"
-   }
+**Option A: Using `/connect` Command (Easiest)**
+
+1. **In OpenCode Desktop**, type:
    ```
-9. **Click:** Save or Add Provider
-
-#### Method B: Manual Configuration (If UI method not available)
-
-1. **Open** your OpenCode Desktop config file (usually `settings.json` or `config.json`)
-2. **Add this section:**
-   ```json
-   {
-     "modelProviders": [
-       {
-         "name": "Bicameral AI",
-         "type": "custom",
-         "path": "C:\\Users\\[Username]\\AppData\\Roaming\\OpenCode Desktop\\bicameral-provider.js",
-         "config": {
-           "bridgeUrl": "ws://localhost:9001",
-           "defaultMode": "standard"
-         }
-       }
-     ]
-   }
+   /connect
    ```
-3. **Save** the file
-4. **Restart** OpenCode Desktop
+2. **Scroll down** and select **"Other"**
+3. **Enter provider ID:**
+   ```
+   bicameral
+   ```
+4. **Enter API key** (anything works, not actually used):
+   ```
+   sk-bicameral-local
+   ```
 
-#### Method C: Using providers.json
+**Option B: Manual Configuration**
 
-If you copied the `providers.json` file in Step 2, OpenCode Desktop may auto-detect it on restart. If not, use Method A or B.
-
-### Step 4: Verify Installation
-
-1. **Restart** OpenCode Desktop completely
-2. **Open a new chat**
-3. **Look at the model dropdown** (usually top-right or in chat settings)
-4. **You should see:** "Bicameral AI" as an option
-5. **Select it** and send a test message like "imagine a purple cat"
-
-## Configuration Options
-
-### providers.json Explained
+Create `opencode.json` in your project directory:
 
 ```json
 {
-  "name": "Bicameral AI",           // Display name in dropdown
-  "type": "custom",                  // Required for custom providers
-  "module": "./bicameral-provider.js", // Path to provider file
-  "config": {
-    "bridgeUrl": "ws://localhost:9001",  // WebSocket URL
-    "defaultMode": "standard",             // "standard" or "internal_analysis"
-    "timeout": 60000                       // Request timeout in ms
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "bicameral": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Bicameral AI",
+      "options": {
+        "baseURL": "http://localhost:9002/v1"
+      },
+      "models": {
+        "bicameral-standard": {
+          "name": "Bicameral AI (Standard Mode)",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          }
+        },
+        "bicameral-technical": {
+          "name": "Bicameral AI (Technical Mode)",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          }
+        }
+      }
+    }
   }
 }
 ```
 
-### Modes
+### Step 3: Test It
 
-**Standard Mode** (`"defaultMode": "standard"`):
-- General-purpose AI responses
-- Creative, unrestricted answers
+1. **In OpenCode Desktop**, type:
+   ```
+   /models
+   ```
+2. **Select:** "Bicameral AI (Standard Mode)" or "Bicameral AI (Technical Mode)"
+3. **Send a test message:**
+   ```
+   imagine a purple cat
+   ```
+
+## Detailed Setup
+
+### Understanding the Stack
+
+```
+┌─────────────────┐
+│ OpenCode Desktop│ (Your IDE)
+└────────┬────────┘
+         │ HTTP POST /v1/chat/completions
+         ▼
+┌─────────────────┐
+│  REST Bridge    │ (Node.js on port 9002)
+│  rest-bridge.js │
+└────────┬────────┘
+         │ WebSocket
+         ▼
+┌─────────────────┐
+│ Rust Bridge     │ (WebSocket on port 9001)
+│ rust-bridge     │
+└────────┬────────┘
+         │ HTTP /v1/chat/completions
+         ▼
+┌─────────────────┐
+│   LM Studio     │ (Port 1234)
+│   Models        │
+└─────────────────┘
+```
+
+### Installation Options
+
+#### Option 1: Direct Node.js (Development)
+
+```bash
+# Navigate to bicameralAI folder
+cd C:\Users\punch\Documents\GitHub\bicameralAI
+
+# Start the REST bridge
+node rest-bridge.js
+
+# Keep this terminal open while using OpenCode Desktop
+```
+
+#### Option 2: PM2 Service (Production)
+
+```bash
+# Install PM2 globally
+npm install -g pm2
+
+# Start as service
+cd C:\Users\punch\Documents\GitHub\bicameralAI
+pm2 start rest-bridge.js --name bicameral-rest-bridge
+
+# Save PM2 config
+pm2 save
+pm2 startup
+
+# Check status anytime
+pm2 status
+pm2 logs bicameral-rest-bridge
+```
+
+### Model Selection
+
+**Bicameral AI (Standard Mode)**
+- Uses `mode: 'standard'`
+- Creative, general-purpose responses
 - Good for: Brainstorming, creative writing, general questions
+- Example: "imagine a purple cat"
 
-**Internal Analysis Mode** (`"defaultMode": "internal_analysis"`):
+**Bicameral AI (Technical Mode)**
+- Uses `mode: 'internal_analysis'`
 - Technical QAM16/FOA domain focus
-- Restricted to signal processing topics
-- Good for: Technical analysis, system optimization, architecture discussions
+- Good for: Signal processing analysis, system optimization
+- Example: "analyze QAM16 constellation patterns"
 
-### Switching Modes
+### Troubleshooting
 
-If OpenCode Desktop supports provider-specific settings:
-1. Go to **Settings → Model Providers**
-2. Find **Bicameral AI**
-3. Edit configuration and change `defaultMode`
-4. Save and restart
+**"Connection refused" on port 9002**
+- REST bridge not running
+- Solution: `node rest-bridge.js`
 
-Or create **two provider instances**:
+**"Connection refused" on port 9001**
+- Bicameral rust-bridge not running
+- Solution: `cd rust-bridge && cargo run`
+
+**"No models available"**
+- LM Studio not running or no models loaded
+- Solution: Open LM Studio and load models
+
+**"Request timeout"**
+- Response too long for default timeout
+- Solution: Reduce complexity or use smaller prompts
+
+**Model dropdown doesn't show Bicameral AI**
+- opencode.json not in correct location
+- Solution: Place in project directory or `%APPDATA%\OpenCode Desktop\`
+
+**"Module not found" errors**
+- REST bridge requires Node.js
+- Solution: Install Node.js from https://nodejs.org
+
+### Advanced Configuration
+
+#### Custom Token Limits
+
+Edit `opencode.json`:
+
 ```json
 {
-  "providers": [
-    {
-      "name": "Bicameral AI (Standard)",
-      "type": "custom",
-      "module": "./bicameral-provider.js",
-      "config": { "defaultMode": "standard" }
-    },
-    {
-      "name": "Bicameral AI (Technical)",
-      "type": "custom",
-      "module": "./bicameral-provider.js",
-      "config": { "defaultMode": "internal_analysis" }
+  "provider": {
+    "bicameral": {
+      "models": {
+        "bicameral-standard": {
+          "name": "Bicameral AI (Standard)",
+          "limit": {
+            "context": 128000,
+            "output": 4096  // Reduce if responses too slow
+          }
+        }
+      }
     }
-  ]
+  }
 }
 ```
 
-## Troubleshooting
+#### Multiple Projects
 
-### "Provider not found" or "Module not found"
+Each project can have its own `opencode.json`:
 
-**Check:**
-- All 3 files copied to correct folder
-- File paths in configuration are correct
-- Use full path instead of relative path
-- Example: `C:\Users\punch\AppData\Roaming\OpenCode Desktop\bicameral-provider.js`
-
-### "Connection refused" or "WebSocket error"
-
-**Check:**
-- Bicameral AI bridge is running: `cd rust-bridge && cargo run`
-- Port 9001 is not blocked by firewall
-- Bridge URL is `ws://localhost:9001` (not http://)
-
-### "Model not found" errors
-
-**Check:**
-- LM Studio is running with models loaded
-- Models are available at `http://localhost:1234/v1/models`
-- Model names match exactly
-
-### Responses are truncated
-
-**Fix:** The provider uses 8192 tokens for comparator by default. If still truncated:
-- Check LM Studio max context length settings
-- Increase `max_tokens_comparator` in provider config
-- Use smaller/more focused prompts
-
-### "Cannot find module 'opencode-api.js'"
-
-**Fix:** Ensure both files are in the same folder:
 ```
-OpenCode Desktop Folder/
-├── bicameral-provider.js
-└── opencode-api.js  ← Must be here too!
+ProjectA/
+├── src/
+└── opencode.json  (uses bicameral-standard)
+
+ProjectB/
+├── src/
+└── opencode.json  (uses bicameral-technical)
 ```
 
-## Advanced: Using with Projects
+#### Environment Variables
 
-### Per-Project Configuration
+Set default mode via environment:
 
-If OpenCode Desktop supports project-specific providers:
+```bash
+# Windows Command Prompt
+set BICAMERAL_MODE=standard
+opencode
 
-1. **In your project folder**, create `.opencode/providers.json`:
-   ```json
-   {
-     "providers": [
-       {
-         "name": "Bicameral AI",
-         "type": "custom",
-         "module": "../bicameral-provider.js"
-       }
-     ]
-   }
-   ```
-
-2. **Or use workspace settings** in OpenCode Desktop
-
-## Testing the Setup
-
-**Quick test commands:**
-
-```javascript
-// Test 1: Creative mode
-"imagine a purple cat with magical powers"
-
-// Test 2: Technical mode (if using internal_analysis)
-"analyze the QAM16 constellation patterns for optimization"
-
-// Test 3: Complex task
-"create an API layer to interface with opencode"
-
-// Test 4: Left hemisphere (analytical)
-This is handled automatically by the provider
+# Windows PowerShell
+$env:BICAMERAL_MODE="technical"
+opencode
 ```
 
-## File Summary
+### API Endpoints
 
-| File | Purpose | Location |
+The REST bridge exposes:
+
+- `GET /v1/models` - List available models
+- `POST /v1/chat/completions` - Send chat completion
+
+Example direct API call:
+
+```bash
+curl http://localhost:9002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bicameral-standard",
+    "messages": [{"role": "user", "content": "hello"}]
+  }'
+```
+
+### File Reference
+
+| File | Purpose | Required |
 |------|---------|----------|
-| `opencode-api.js` | Core WebSocket API client | OpenCode Desktop config folder |
-| `bicameral-provider.js` | Provider wrapper for OpenCode | OpenCode Desktop config folder |
-| `providers.json` | Provider registration (optional) | OpenCode Desktop config folder |
+| `rest-bridge.js` | REST-to-WebSocket bridge | ✅ Yes |
+| `opencode.json` | Provider configuration | ✅ Yes |
+| `opencode-api.js` | WebSocket client library | ❌ Not needed for OpenCode Desktop |
+| `bicameral-provider.js` | Legacy provider (not used) | ❌ No |
 
-## Next Steps
+### Testing
 
-1. ✅ Install provider files
-2. ✅ Register in OpenCode Desktop settings
-3. ✅ Select "Bicameral AI" from model dropdown
+Run the test script:
+
+```bash
+cd C:\Users\punch\Documents\GitHub\bicameralAI
+node test-rest-api.js
+```
+
+This tests:
+1. Connection to REST bridge
+2. Model listing
+3. Chat completion
+4. Both standard and technical modes
+
+### Next Steps
+
+1. ✅ Start all three services (bridge, LM Studio, REST bridge)
+2. ✅ Configure OpenCode Desktop with `/connect` or opencode.json
+3. ✅ Select Bicameral AI model
 4. ✅ Test with sample queries
-5. 🎯 Configure project-specific settings as needed
+5. 🎯 Use in daily workflows!
 
-**Need help?** Check the bridge logs with `RUST_LOG=debug cargo run` in rust-bridge folder.
+## Support
+
+**Bridge logs:**
+```bash
+cd rust-bridge
+RUST_LOG=debug cargo run
+```
+
+**REST bridge logs:**
+```bash
+pm2 logs bicameral-rest-bridge
+# or
+node rest-bridge.js  # (shows console output)
+```
+
+**Check all services:**
+- Port 1234: LM Studio
+- Port 9001: Bicameral rust-bridge  
+- Port 9002: REST bridge (OpenCode Desktop connects here)
