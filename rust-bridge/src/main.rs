@@ -39,6 +39,10 @@ struct Args {
     #[arg(long)]
     right_model: Option<String>,
 
+    /// LM Studio API key (or set LMSTUDIO_API_KEY env var)
+    #[arg(long)]
+    api_key: Option<String>,
+
     /// Log level
     #[arg(short, long, default_value = "info")]
     log_level: String,
@@ -73,6 +77,17 @@ async fn main() -> anyhow::Result<()> {
     config.eeg_ws_url = args.eeg_url;
     config.lmstudio_url = args.lmstudio_url;
     config.inference_port = args.port;
+    
+    // Load API key from args or environment variable
+    config.lmstudio_api_key = args.api_key.or_else(|| {
+        std::env::var("LMSTUDIO_API_KEY").ok()
+    });
+    
+    if config.lmstudio_api_key.is_some() {
+        info!("LM Studio API key: configured");
+    } else {
+        info!("LM Studio API key: not configured (authentication may fail)");
+    }
 
     if let Some(model) = args.left_model {
         config.default_models.insert("left".to_string(), model);

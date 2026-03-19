@@ -180,6 +180,8 @@ pub struct LMStudioRequest {
     pub temperature: f64,
     pub max_tokens: u32,
     pub stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<serde_json::Value>>,  // Tools for function calling
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -259,6 +261,7 @@ pub enum ClientMessage {
         max_tokens_left: Option<u32>,
         max_tokens_right: Option<u32>,
         max_tokens_comparator: Option<u32>,
+        tools: Option<Vec<serde_json::Value>>,  // Tools for function calling
     },
     #[serde(rename = "get_models")]
     GetModels,
@@ -405,6 +408,7 @@ pub struct AttentionPoint {
 pub struct BridgeConfig {
     pub eeg_ws_url: String,
     pub lmstudio_url: String,
+    pub lmstudio_api_key: Option<String>,  // API key for LM Studio authentication
     pub inference_port: u16,
     pub default_models: HashMap<String, String>, // hemisphere -> model_id
     pub coherence_threshold_high: f64,
@@ -420,6 +424,7 @@ impl Default for BridgeConfig {
         Self {
             eeg_ws_url: "ws://localhost:8765".to_string(),
             lmstudio_url: "http://localhost:1234".to_string(),
+            lmstudio_api_key: None,  // No API key by default
             inference_port: 8766,
             default_models,
             coherence_threshold_high: 0.7,

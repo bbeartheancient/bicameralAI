@@ -4,7 +4,8 @@
   "description": "A **high-performance bicameral AI system** that processes network signals through dual-hemisphere AI models with First Order Ambisonic (FOA) spatialization.",
   "main": "bicameral-provider.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mcp": "node mcp-server.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,8 @@
   },
   "homepage": "https://github.com/bbeartheancient/bicameralAI#readme",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "opencode-websearch-cited": "^1.2.0",
     "ws": "^8.19.0"
   }
 }

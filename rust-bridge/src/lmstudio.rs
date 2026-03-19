@@ -8,12 +8,13 @@ use tracing::{debug, info};
 /// HTTP client for LMStudio API
 pub struct LMStudioClient {
     base_url: String,
+    api_key: Option<String>,
     client: Client,
     available_models: Vec<String>,
 }
 
 impl LMStudioClient {
-    pub fn new(base_url: String) -> Self {
+    pub fn new(base_url: String, api_key: Option<String>) -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(60))  // Increased from 30s to 60s for long comparator responses
             .build()
@@ -21,6 +22,7 @@ impl LMStudioClient {
 
         Self {
             base_url: base_url.trim_end_matches('/').to_string(),
+            api_key,
             client,
             available_models: Vec::new(),
         }
@@ -57,7 +59,11 @@ impl LMStudioClient {
         
         debug!("Fetching models from {}", url);
         
-        let response = self.client.get(&url).send().await?;
+        let mut request = self.client.get(&url);
+        if let Some(ref key) = self.api_key {
+            request = request.header("Authorization", format!("Bearer {}", key));
+        }
+        let response = request.send().await?;
         
         if !response.status().is_success() {
             let status = response.status();
@@ -89,6 +95,7 @@ impl LMStudioClient {
         messages: Vec<LMStudioMessage>,
         temperature: f64,
         max_tokens: u32,
+        tools: Option<Vec<serde_json::Value>>,  // Tools for function calling
     ) -> Result<String> {
         let url = format!("{}/v1/chat/completions", self.base_url);
         
@@ -98,16 +105,24 @@ impl LMStudioClient {
             temperature,
             max_tokens,
             stream: false,
+            tools,  // Pass tools to LM Studio
         };
 
         debug!(
-            "Sending request to {} with model {}",
-            url, model
+            "Sending request to {} with model {} (tools: {})",
+            url, model, 
+            request.tools.as_ref().map(|t| t.len()).unwrap_or(0)
         );
 
-        let response = self.client
+        let mut request_builder = self.client
             .post(&url)
-            .json(&request)
+            .json(&request);
+        
+        if let Some(ref key) = self.api_key {
+            request_builder = request_builder.header("Authorization", format!("Bearer {}", key));
+        }
+        
+        let response = request_builder
             .send()
             .await?;
 
@@ -175,6 +190,7 @@ impl LMStudioClient {
             messages,
             temperature,
             300,
+            None,  // No tools for inference
         ).await?;
 
         let latency = start.elapsed().as_secs_f64() * 1000.0;

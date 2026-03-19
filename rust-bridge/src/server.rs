@@ -24,6 +24,7 @@ pub struct ChatQuery {
     pub max_tokens_left: Option<u32>,
     pub max_tokens_right: Option<u32>,
     pub max_tokens_comparator: Option<u32>,
+    pub tools: Option<Vec<serde_json::Value>>,  // Tools for function calling
 }
 
 /// Pending query waiting for both hemisphere responses
@@ -370,6 +371,7 @@ impl InferenceServer {
                         max_tokens_left: query.max_tokens_left,
                         max_tokens_right: query.max_tokens_right,
                         max_tokens_comparator: query.max_tokens_comparator,
+                        tools: query.tools.clone(),  // Pass tools
                     };
                     
                     let right_query = ChatQuery {
@@ -381,6 +383,7 @@ impl InferenceServer {
                         max_tokens_left: query.max_tokens_left,
                         max_tokens_right: query.max_tokens_right,
                         max_tokens_comparator: query.max_tokens_comparator,
+                        tools: query.tools.clone(),  // Pass tools
                     };
                     
                     // Process both queries
@@ -421,6 +424,7 @@ impl InferenceServer {
                         query_cache.clone(),
                         query.mode.clone(),
                         query.max_tokens_comparator,
+                        query.tools.clone(),  // Pass tools to comparator
                     ));
                 } else {
                     // Single hemisphere query - process directly
@@ -606,46 +610,77 @@ async fn process_hemisphere_query(
              if is_standard_mode { "STANDARD" } else { "TECHNICAL" });
     
     let system_prompt = if is_standard_mode {
-        // Standard mode: Completely generic prompts, no technical terminology
+        // Standard mode: Action-oriented implementation prompts with TOOL CALLING
         match hemisphere {
             Hemisphere::Left => {
-                "You are an AI assistant focused on analytical thinking. \
-                Provide detailed, logical analysis with step-by-step reasoning. \
-                IMPORTANT: Give a complete, substantive answer with specific details and examples. \
-                Do not philosophize, hedge, or suggest discussing further - answer directly and thoroughly."
+                "You are an AI assistant with TOOL CALLING capabilities. \
+                CRITICAL: Use tools to complete tasks - do NOT describe or simulate tools. \
+                \
+                TOOL CALL FORMAT (EXACT - no extra text): \
+                <tool_call>{\"name\": \"file_create\", \"arguments\": {\"path\": \"filename.js\", \"content\": \"file contents here\"}}</tool_call> \
+                \
+                RULES: \
+                1. ONE tool call per response \
+                2. Use </tool_call> closing tag (NOT </output_code>) \
+                3. ALL required arguments must be in the JSON \
+                4. Valid JSON only - no trailing commas, no comments \
+                5. NO explanatory text before or after the tool call \
+                \
+                AVAILABLE TOOLS: \
+                - file_create: Creates a file. Required: path, content \
+                - file_edit: Edits a file. Required: path, old_string, new_string \
+                - read_file: Reads a file. Required: path \
+                \
+                IMPORTANT: \
+                - run_javascript is UNAVAILABLE (requires Deno ESM format) \
+                - Create files with file_create instead \
+                - Use ESM format: import fs from 'fs' NOT require('fs') \
+                \
+                DO NOT write code that 'simulates' tools. CALL the actual tool."
             }
             Hemisphere::Right => {
-                "You are an AI assistant focused on creative thinking. \
-                Provide imaginative, holistic perspectives with novel ideas and patterns. \
-                IMPORTANT: Give a complete, substantive answer with creative details and original concepts. \
-                Do not philosophize, hedge, or suggest discussing further - answer directly and thoroughly."
+                "You are an AI assistant with TOOL CALLING capabilities. \
+                CRITICAL: Use tools to complete creative tasks - do NOT just design solutions. \
+                \
+                TOOL CALL FORMAT (EXACT - no extra text): \
+                <tool_call>{\"name\": \"tool_name\", \"arguments\": {\"param\": \"value\"}}</tool_call> \
+                \
+                RULES: \
+                1. ONE tool call per response \
+                2. Use </tool_call> closing tag (NOT </output_code>) \
+                3. ALL required arguments must be in the JSON \
+                4. Valid JSON only - check syntax carefully \
+                5. NO explanatory text before or after the tool call \
+                \
+                AVAILABLE TOOLS: \
+                - file_create, file_edit, read_file \
+                \
+                IMPORTANT: \
+                - run_javascript is UNAVAILABLE (requires Deno ESM format) \
+                - Create working solutions with file_create instead \
+                - Use ESM format for JS: import X from 'module' \
+                \
+                Build creative solutions by CALLING tools, not describing them."
             }
             Hemisphere::Both => unreachable!(),
         }
     } else {
         // Internal/Bicameral mode: Domain-restricted to QAM16/FOA signal processing
+        // PROMPT OPTIMIZATION: Reduced from ~600 chars to ~200 chars to fit 4K context window
         match hemisphere {
             Hemisphere::Left => {
-                "You are the LEFT HEMISPHERE (parallel AI processing path) of Brainscan Matrix - a network traffic analysis system. \
-                DOMAIN: QAM16 constellation signal processing with FOA (First Order Ambisonic) spatialization. \
-                YOUR ROLE: Analytical processing of network signals from the left processing path. \
-                CHANNELS: LFU quadrant (Q0-Q3), LBD quadrant (Q4-Q7). \
-                TASK: Analyze queries about network signal processing, optimization, system architecture, or bicameral tuning. \
-                CLARIFICATION: 'Bicameral' refers to dual parallel AI models processing network data - NOT brain science. \
-                ALLOWED: Technical discussion of system architecture, tuning parameters, optimization strategies. \
-                FORBIDDEN: Human brain biology, neuroscience, cognitive psychology, fMRI, visual attention research. \
-                OUTPUT: Technical response about QAM signal processing, matrix visualization, or performance optimization."
+                "Brainscan Matrix LEFT HEMISPHERE - QAM16 network signal processor. \
+                ROLE: Analytical processing of LFU(Q0-Q3) and LBD(Q4-Q7) quadrants. \
+                TASK: Technical analysis of signal processing, system architecture, optimization. \
+                NOTE: 'Hemisphere' = AI processing path, NOT brain science. \
+                NO neuroscience/biology content. Output: Technical QAM/FOA analysis."
             }
             Hemisphere::Right => {
-                "You are the RIGHT HEMISPHERE (parallel AI processing path) of Brainscan Matrix - a network traffic analysis system. \
-                DOMAIN: QAM16 constellation signal processing with FOA (First Order Ambisonic) spatialization. \
-                YOUR ROLE: Holistic pattern recognition from the right processing path. \
-                CHANNELS: RBU quadrant (Q8-Q11), RFD quadrant (Q12-Q15). \
-                TASK: Identify patterns in network traffic, signal flow, or bicameral system behavior. \
-                CLARIFICATION: 'Bicameral' refers to dual parallel AI models - NOT biological hemispheres. \
-                ALLOWED: Technical discussion of system architecture, tuning parameters, optimization strategies. \
-                FORBIDDEN: Human brain biology, neuroscience, cognitive science, biological neural networks. \
-                OUTPUT: Pattern-focused response about signal flow, traffic patterns, or system behavior."
+                "Brainscan Matrix RIGHT HEMISPHERE - QAM16 network signal processor. \
+                ROLE: Pattern recognition for RBU(Q8-Q11) and RFD(Q12-Q15) quadrants. \
+                TASK: Pattern analysis of signal flow, traffic behavior, system optimization. \
+                NOTE: 'Hemisphere' = AI processing path, NOT biological. \
+                NO brain science content. Output: Pattern-focused technical response."
             }
             Hemisphere::Both => unreachable!(),
         }
@@ -726,7 +761,7 @@ async fn process_hemisphere_query(
     } else {
         query.max_tokens_right.unwrap_or(2048)
     };
-    let response = match lmstudio.chat_completion(&model, messages, 0.7, max_tokens).await {
+    let response = match lmstudio.chat_completion(&model, messages, 0.7, max_tokens, query.tools.clone()).await {
         Ok(resp) => {
             // Cache the response
             let cache_entry = ChatResponseCacheEntry {
@@ -807,6 +842,7 @@ async fn process_comparator(
     query_cache: Arc<QueryCache<ChatResponseCacheEntry>>,
     mode: Option<String>,
     max_tokens: Option<u32>,
+    tools: Option<Vec<serde_json::Value>>,  // Tools for function calling
 ) {
     // Wait for both responses (with timeout)
     let max_wait = std::time::Duration::from_secs(60);
@@ -880,32 +916,42 @@ async fn process_comparator(
              if is_standard_mode { "STANDARD/GENERIC" } else { "TECHNICAL/QAM16" });
     
     let system_prompt = if is_standard_mode {
-        // Standard mode: Generic synthesis prompt, no technical references
-        "You are a response synthesizer. \
-        YOUR TASK: Combine two AI responses (one analytical, one creative) into a single cohesive answer. \
-        INPUT FORMAT: Query + Analytical response + Creative response. \
-        OUTPUT REQUIREMENTS: \
-        1. Provide a COMPLETE, SUBSTANTIVE answer that directly addresses the user's query. \
-        2. Integrate specific details, examples, and concrete information from both responses. \
-        3. Create a unified response that flows naturally without labeling which part came from which model. \
-        4. Do NOT give vague philosophical musings or deflect the question. \
-        5. Do NOT suggest discussing further - answer the question fully now. \
-        6. Structure the response with clear sections or points for readability."
+        // Standard mode: Action-oriented prompt with TOOL CALLING support
+        "You are an AI SYNTHESIZER with TOOL CALLING capabilities. \
+        YOUR TASK: Synthesize left/right perspectives and EXECUTE via TOOLS. \
+        \
+        TOOL CALL FORMAT (EXACT - no extra text): \
+        <tool_call>{\"name\": \"tool_name\", \"arguments\": {\"param\": \"value\"}}</tool_call> \
+        \
+        RULES: \
+        1. ONE tool call per response \
+        2. Use </tool_call> closing tag (NOT </output_code>) \
+        3. ALL required arguments must be in the JSON \
+        4. Valid JSON only - check syntax carefully \
+        5. NO explanatory text before or after the tool call \
+        \
+        SYNTHESIS APPROACH: \
+        - Integrate analytical (left) and creative (right) perspectives \
+        - Choose the best implementation approach \
+        - EXECUTE via TOOL CALL to create/edit files \
+        \
+        IMPORTANT: \
+        - run_javascript is UNAVAILABLE (Deno ESM format required) \
+        - Use file_create/file_edit instead \
+        - Generate ESM code: import X from 'module' NOT require() \
+        \
+        DO NOT describe what you would do - CALL THE TOOL AND DO IT."
     } else {
         // Internal/Bicameral mode: Domain-restricted to QAM16/FOA signal processing
-        "You are the SYNTHESIZER for Brainscan Matrix - a QAM16 network signal processing system. \
-        DOMAIN: Network traffic analysis with FOA (First Order Ambisonic) spatialization. \
-        YOUR ROLE: Integrate LEFT (analytical/technical) and RIGHT (holistic/pattern-based) AI model perspectives. \
-        CLARIFICATION: 'Hemisphere' and 'bicameral' refer to parallel AI processing paths, NOT biological brain parts. \
-        INPUT FORMAT: Query + Left AI model response + Right AI model response. \
-        OUTPUT: Unified, coherent response about QAM signal processing, system architecture, or optimization. \
-        CONSTRAINTS: \
-        - ALLOWED: Technical discussion of bicameral architecture, tuning parameters, system optimization. \
-        - ALLOWED: References to 'left hemisphere' and 'right hemisphere' as AI processing paths. \
-        - FORBIDDEN: Human brain biology, neuroscience, cognitive psychology, fMRI, biological neural networks. \
-        - FORBIDDEN: Image processing, computer vision, visual attention mechanisms. \
-        - ONLY discuss: network traffic, QAM modulation, signal processing, matrix visualization, performance metrics. \
-        - If biological content detected, respond with: 'Note: Discussing technical architecture only - no brain science content.'"
+        // PROMPT OPTIMIZATION: Reduced from ~700 chars to ~250 chars to fit 4K context window
+        "Brainscan Matrix SYNTHESIZER - QAM16 signal processor. \
+        ROLE: Integrate LEFT (analytical) + RIGHT (pattern) AI perspectives. \
+        DOMAIN: QAM16 constellation processing, FOA spatialization (W/X/Y/Z). \
+        NOTE: 'Hemisphere' = parallel AI paths, NOT brain science. \
+        INPUT: Query + Left response + Right response. \
+        OUTPUT: Unified technical response. \
+        FORBIDDEN: Neuroscience, biology, cognitive science. \
+        TECHNICAL ONLY: network traffic, signal processing, matrix visualization."
     };
     
     // Format user message with system context
@@ -959,7 +1005,7 @@ Query: {}
     ];
     
     let max_tokens = max_tokens.unwrap_or(4096);
-    match lmstudio.chat_completion(&comparator_model, messages, 0.7, max_tokens).await {
+    match lmstudio.chat_completion(&comparator_model, messages, 0.7, max_tokens, tools).await {
         Ok(combined_response) => {
             // Cache the combined response
             let full_response = format!(
@@ -1157,18 +1203,21 @@ async fn process_single_query(
         // Standard mode: Just the query, no technical context
         query.message.clone()
     } else {
-        // Internal mode: Include EEG context if available
+        // Internal mode: Minimized system context to fit 4K context window
         if let Some(ref spatialized) = eeg_context {
             format!(
-                "{}\n\nCurrent brain state context:\n\
-                Overall coherence: {:.2}\n\
-                Your hemisphere activity: {:.2}",
-                query.message,
-                spatialized.coherence,
-                if hemisphere == Hemisphere::Left { spatialized.left_coherence } else { spatialized.right_coherence }
+                "Brainscan Matrix QAM16 processor. 16 channels (Q0-Q15) in 4 quadrants (LFU/LBD/RBU/RFD). \
+                Coherence: {:.2}, Dominant: {}\n\nQuery: {}",
+                if hemisphere == Hemisphere::Left { spatialized.left_coherence } else { spatialized.right_coherence },
+                if spatialized.left_coherence > spatialized.right_coherence { "L" } else { "R" },
+                query.message
             )
         } else {
-            query.message.clone()
+            format!(
+                "Brainscan Matrix QAM16 processor. Channels Q0-Q15, FOA spatialization (W/X/Y/Z). \
+                Implements: sliding window, adaptive thresholding, channel reduction (16→10).\n\nQuery: {}",
+                query.message
+            )
         }
     };
     
@@ -1216,7 +1265,7 @@ async fn process_single_query(
     } else {
         query.max_tokens_right.unwrap_or(2048)
     };
-    match lmstudio.chat_completion(&model, messages, 0.7, max_tokens).await {
+    match lmstudio.chat_completion(&model, messages, 0.7, max_tokens, query.tools.clone()).await {
         Ok(response) => {
             // Cache the response
             let cache_entry = ChatResponseCacheEntry {
@@ -1423,15 +1472,16 @@ async fn handle_client(
                             *cm = model_id.clone();
                             info!("Client {} set comparator model to {}", addr, model_id);
                         }
-                        ClientMessage::ChatMessage { message, hemisphere, mode, max_tokens_left, max_tokens_right, max_tokens_comparator } => {
+                        ClientMessage::ChatMessage { message, hemisphere, mode, max_tokens_left, max_tokens_right, max_tokens_comparator, tools } => {
                             let mode_str = mode.as_ref().map(|m| m.as_str()).unwrap_or("none");
                             let left_tokens = max_tokens_left.map(|t| t.to_string()).unwrap_or_else(|| "default".to_string());
                             let right_tokens = max_tokens_right.map(|t| t.to_string()).unwrap_or_else(|| "default".to_string());
                             let comp_tokens = max_tokens_comparator.map(|t| t.to_string()).unwrap_or_else(|| "default".to_string());
-                            info!("Chat from {} (mode: {}, left_tokens: {}, right_tokens: {}, comp_tokens: {}): {}", 
-                                  addr, mode_str, left_tokens, right_tokens, comp_tokens, message);
-                            println!("[CHAT DEBUG] Received chat message from {} with mode: {:?}, left_tokens: {:?}, right_tokens: {:?}, comp_tokens: {:?}", 
-                                     addr, mode, max_tokens_left, max_tokens_right, max_tokens_comparator);
+                            let tools_count = tools.as_ref().map(|t| t.len()).unwrap_or(0);
+                            info!("Chat from {} (mode: {}, left_tokens: {}, right_tokens: {}, comp_tokens: {}, tools: {}): {}", 
+                                  addr, mode_str, left_tokens, right_tokens, comp_tokens, tools_count, message);
+                            println!("[CHAT DEBUG] Received chat message from {} with mode: {:?}, left_tokens: {:?}, right_tokens: {:?}, comp_tokens: {:?}, tools: {:?}", 
+                                     addr, mode, max_tokens_left, max_tokens_right, max_tokens_comparator, tools_count);
                             
                             // Generate unique query ID for tracking
                             let query_id = format!("{}_{}", addr.port(), std::time::SystemTime::now()
@@ -1449,6 +1499,7 @@ async fn handle_client(
                                 max_tokens_left,
                                 max_tokens_right,
                                 max_tokens_comparator,
+                                tools,  // Pass tools through to processing
                             };
                             
                             if let Err(e) = chat_tx.send(query).await {

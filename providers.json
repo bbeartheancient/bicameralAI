@@ -5,25 +5,24 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Bicameral AI",
       "options": {
-        "baseURL": "http://localhost:9001/v1"
+        "baseURL": "http://localhost:9002/v1"
       },
       "models": {
         "bicameral-standard": {
           "name": "Bicameral AI (Standard Mode)",
           "limit": {
-            "context": 128000,
-            "output": 8192
+            "context": 4096,
+            "output": 2048
           }
         },
         "bicameral-technical": {
           "name": "Bicameral AI (Technical Mode)",
           "limit": {
-            "context": 128000,
-            "output": 8192
+            "context": 4096,
+            "output": 2048
           }
         }
       }
     }
   }
 }
-

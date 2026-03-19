@@ -220,6 +220,12 @@ class BicameralRestBridge {
                     return;
                 }
 
+                // Check if tools are requested (for tool-calling support)
+                const tools = request.tools || [];
+                if (tools.length > 0) {
+                    console.log(`[REST Bridge] Tool calling enabled with ${tools.length} tools`);
+                }
+
                 // Send to Bicameral AI with conservative limits for 4K context window
                 // LM Studio context: ~4096, system prompts: ~1500, leaving ~2500 for completion
                 ws.send(JSON.stringify({
@@ -229,7 +235,8 @@ class BicameralRestBridge {
                     mode: mode,
                     max_tokens_left: 512,
                     max_tokens_right: 512,
-                    max_tokens_comparator: 1024
+                    max_tokens_comparator: 1024,
+                    tools: tools  // Pass tools through to Bicameral AI
                 }));
             });
 
@@ -245,7 +252,7 @@ class BicameralRestBridge {
                     if (msg.type === 'chat_response') {
                         console.log(`[REST Bridge] Received response from ${msg.hemisphere || 'unknown'}`);
                         
-                        // The 'both' hemisphere response is the final comparator output
+                            // The 'both' hemisphere response is the final comparator output
                         if (msg.hemisphere === 'both' || !msg.hemisphere) {
                             receivedComparator = true;
                             
@@ -254,7 +261,7 @@ class BicameralRestBridge {
                             // Format the message for better display
                             let formattedMessage = this.formatMessage(msg.message);
                             
-                            // Convert to OpenAI format
+                            // Simple passthrough - no tool parsing (models don't support it properly)
                             const openaiResponse = {
                                 id: `chatcmpl-${Date.now()}`,
                                 object: 'chat.completion',
@@ -312,7 +319,7 @@ class BicameralRestBridge {
 
     /**
      * Format message for better readability
-     * Fixes common formatting issues from model output
+     * Uses markdown formatting for OpenCode Desktop compatibility
      */
     formatMessage(message) {
         if (!message) return '';
@@ -320,15 +327,18 @@ class BicameralRestBridge {
         // Step 1: Normalize line endings
         message = message.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         
-        // Step 2: Add blank line after [Combined] header
-        message = message.replace(/^(\[Combined\].*?)$/m, '$1\n');
+        // Step 2: Add blank line after [Combined] header for readability
+        message = message.replace(/^(\[Combined\].*?)$/m, '$1\n\n');
         
-        // Step 3: Convert single newlines to double newlines for markdown
-        // This forces paragraph breaks in OpenCode Desktop
-        message = message.replace(/\n/g, '\n\n');
+        // Step 3: Ensure code blocks are properly formatted
+        // Add language identifier to bare triple backticks
+        message = message.replace(/```\s*\n/g, '```javascript\n');
         
-        // Step 4: Clean up excessive newlines (more than 3)
-        message = message.replace(/\n{5,}/g, '\n\n\n');
+        // Step 4: Ensure proper spacing around headers
+        message = message.replace(/^(#{1,6}\s.+)$/gm, '\n$1\n');
+        
+        // Step 5: Clean up excessive newlines (more than 3)
+        message = message.replace(/\n{4,}/g, '\n\n\n');
         
         return message.trim();
     }

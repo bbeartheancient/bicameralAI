@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "bicameral-ai": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\punch\\Documents\\GitHub\\bicameralAI\\mcp-server.js"
+      ],
+      "env": {
+        "LMSTUDIO_URL": "http://localhost:1234",
+        "BRIDGE_WS_URL": "ws://localhost:8766"
+      }
+    }
+  }
+}

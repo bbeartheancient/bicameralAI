@@ -33,8 +33,9 @@ impl BrainscanBridge {
         info!("LMStudio: {}", self.config.lmstudio_url);
         info!("Server Port: {}", self.config.inference_port);
 
-        // Setup LMStudio client
-        let mut lmstudio = LMStudioClient::new(self.config.lmstudio_url.clone());
+        // Setup LMStudio client with API key
+        let api_key = self.config.lmstudio_api_key.clone();
+        let mut lmstudio = LMStudioClient::new(self.config.lmstudio_url.clone(), api_key);
         lmstudio.connect().await?;
         let lmstudio = Arc::new(tokio::sync::RwLock::new(lmstudio));
         
