@@ -1,0 +1,24 @@
+{
+  "name": "bicameralai",
+  "version": "1.0.0",
+  "description": "A **high-performance bicameral AI system** that processes network signals through dual-hemisphere AI models with First Order Ambisonic (FOA) spatialization.",
+  "main": "bicameral-provider.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bbeartheancient/bicameralAI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bbeartheancient/bicameralAI/issues"
+  },
+  "homepage": "https://github.com/bbeartheancient/bicameralAI#readme",
+  "dependencies": {
+    "ws": "^8.19.0"
+  }
+}
