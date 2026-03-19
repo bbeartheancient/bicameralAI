@@ -158,15 +158,16 @@ class BicameralRestBridge {
                     return;
                 }
 
-                // Send to Bicameral AI
+                // Send to Bicameral AI with conservative limits for 4K context window
+                // LM Studio context: ~4096, system prompts: ~1500, leaving ~2500 for completion
                 ws.send(JSON.stringify({
                     type: 'chat_message',
                     message: lastMessage.content,
                     hemisphere: 'both',
                     mode: mode,
-                    max_tokens_left: request.max_tokens || 2048,
-                    max_tokens_right: request.max_tokens || 2048,
-                    max_tokens_comparator: request.max_tokens || 8192
+                    max_tokens_left: 512,
+                    max_tokens_right: 512,
+                    max_tokens_comparator: 1024
                 }));
             });
 
