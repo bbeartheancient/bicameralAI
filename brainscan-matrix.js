@@ -422,10 +422,10 @@
             },
             // CONTEXT CONTROL: Toggle between Standard and Internal Analysis modes
             contextGuardrails: {
-                // Guardrails enabled by default (Internal Analysis Mode)
-                enabled: true,
+                // Guardrails disabled by default (Standard Mode)
+                enabled: false,
                 // Current mode
-                mode: 'internal_analysis', // 'standard' (guardrails off) or 'internal_analysis' (guardrails on)
+                mode: 'standard', // 'standard' (guardrails off) or 'internal_analysis' (guardrails on)
                 // Standard Mode: Guardrails OFF (unrestricted discussion)
                 // Internal Analysis Mode: Guardrails ON (restricted to QAM/FOA)
                 lastToggle: 0,
@@ -3986,20 +3986,46 @@
             const selections = JSON.parse(saved);
             const availableModels = state.models.available;
             
+            // Check if any saved models are invalid (not in available list)
+            const invalidModels = [];
+            if (selections.left && !availableModels.includes(selections.left)) {
+                invalidModels.push(selections.left);
+            }
+            if (selections.right && !availableModels.includes(selections.right)) {
+                invalidModels.push(selections.right);
+            }
+            if (selections.comparator && !availableModels.includes(selections.comparator)) {
+                invalidModels.push(selections.comparator);
+            }
+            
+            // If invalid models found, clear localStorage and reset
+            if (invalidModels.length > 0) {
+                console.warn('[Models] Invalid models found in localStorage:', invalidModels);
+                console.log('[Models] Clearing localStorage and resetting model selections');
+                localStorage.removeItem('brainscan_models');
+                state.models.left = null;
+                state.models.right = null;
+                state.models.comparator = null;
+                addChatMessage('system', 
+                    `⚠️ Invalid models cleared: ${invalidModels.join(', ')}. Please select available models from the dropdown.`, 
+                    'both');
+                return;
+            }
+            
             const leftSelect = document.getElementById('left-model');
             const rightSelect = document.getElementById('right-model');
             const comparatorSelect = document.getElementById('comparator-model');
             
-            // Only restore if model exists in available list
-            if (leftSelect && selections.left && availableModels.includes(selections.left)) {
+            // Restore valid models
+            if (leftSelect && selections.left) {
                 leftSelect.value = selections.left;
                 state.models.left = selections.left;
             }
-            if (rightSelect && selections.right && availableModels.includes(selections.right)) {
+            if (rightSelect && selections.right) {
                 rightSelect.value = selections.right;
                 state.models.right = selections.right;
             }
-            if (comparatorSelect && selections.comparator && availableModels.includes(selections.comparator)) {
+            if (comparatorSelect && selections.comparator) {
                 comparatorSelect.value = selections.comparator;
                 state.models.comparator = selections.comparator;
             }
@@ -4023,6 +4049,8 @@
             }
         } catch (e) {
             console.warn('[Models] Failed to restore selections:', e);
+            // Clear localStorage on error
+            localStorage.removeItem('brainscan_models');
         }
     }
     
@@ -4298,14 +4326,19 @@
         
         // Send with current weight configuration (immediate for chat)
         const bw = state.bicameralWeights;
+        const cg = state.qamSignals.contextGuardrails;
+        
+        console.log(`[DEBUG] Sending chat with mode: ${cg.mode} (enabled: ${cg.enabled})`);
+        
         send({
             type: 'chat_message',
             message: message,
             hemisphere: 'both',
+            mode: cg.mode,  // 'standard' or 'internal_analysis'
             weights: {
                 left: bw.left,
                 right: bw.right,
-                mode: bw.mode
+                mode: bw.mode  // Keep this for backward compatibility
             },
             priority: priority, // Send priority to server
             taskId: taskId
@@ -4638,7 +4671,7 @@
         document.getElementById('btn-toggle-context-mode')?.addEventListener('click', () => {
             const cg = state.qamSignals.contextGuardrails;
             
-            // Toggle mode (INVERTED: standard = off, internal = on)
+            // Toggle mode: button active = guardrails ON, button inactive = guardrails OFF
             cg.enabled = !cg.enabled;
             cg.mode = cg.enabled ? 'internal_analysis' : 'standard';
             cg.lastToggle = Date.now();
@@ -4649,30 +4682,28 @@
             const warningEl = document.getElementById('context-warning');
             
             if (cg.enabled) {
-                // Internal Analysis Mode - guardrails ON (restricted to QAM/FOA)
+                // Internal Systems Analysis Mode - guardrails ON (restricted to QAM/FOA)
                 if (btn) {
-                    btn.textContent = 'Internal Analysis Mode';
                     btn.classList.add('active');
                 }
                 if (guardrailsEl) {
                     guardrailsEl.textContent = 'ON';
                     guardrailsEl.style.color = '#0f0';
                 }
-                if (warningEl) warningEl.style.display = 'none';
+                if (warningEl) warningEl.style.display = 'block';
                 
-                console.log('[CONTEXT] Guardrails ENABLED - internal analysis mode');
-                addChatMessage('system', 'Internal Analysis Mode: AI restricted to QAM16/FOA domain.', 'both');
+                console.log('[CONTEXT] Guardrails ENABLED - internal systems analysis mode');
+                addChatMessage('system', 'Internal Systems Analysis Mode: AI restricted to QAM16/FOA domain.', 'both');
             } else {
                 // Standard Mode - guardrails OFF (unrestricted)
                 if (btn) {
-                    btn.textContent = 'Standard Mode';
                     btn.classList.remove('active');
                 }
                 if (guardrailsEl) {
                     guardrailsEl.textContent = 'OFF';
                     guardrailsEl.style.color = '#e60003';
                 }
-                if (warningEl) warningEl.style.display = 'block';
+                if (warningEl) warningEl.style.display = 'none';
                 
                 console.log('[CONTEXT] Guardrails DISABLED - standard mode');
                 addChatMessage('system', 'Standard Mode: AI unrestricted.', 'both');

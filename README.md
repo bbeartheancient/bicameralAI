@@ -2,6 +2,15 @@
 
 A **high-performance bicameral AI system** that processes network signals through dual-hemisphere AI models with First Order Ambisonic (FOA) spatialization.
 
+## 📝 Recent Changes (March 2025)
+
+- **Dual Mode Support**: Added Standard Mode (general-purpose AI) and Internal Systems Analysis Mode (technical QAM/FOA focus)
+- **Smart Model Selection**: Auto-clears invalid cached models when models change in LM Studio
+- **LM Studio Integration**: Token counts now use LM Studio server settings (set to 0 for default)
+- **Enhanced Prompts**: Standard mode uses generic AI prompts without technical domain restrictions
+- **Debug Logging**: Added comprehensive logging for mode tracking and prompt selection
+- **UI Improvements**: Renamed "Internal Analysis Mode" to "Internal Systems Analysis" with clearer button behavior
+
 ## 🧠 What It Does
 
 Brainscan Matrix creates a **digital bicameral processing system** featuring:

@@ -553,7 +553,7 @@
 </head>
 <body>
     <div id="header">
-        <h1>BRAINSCAN // MATRIX</h1>
+        <h1>BICAMERAL AI</h1>
         <div id="status-bar">
             <div class="status-item">
                 <span class="status-dot" id="bridge-status"></span>
@@ -1062,19 +1062,19 @@
                 <!-- Context Guardrails Status -->
                 <div class="data-row">
                     <span class="data-label">Guardrails:</span>
-                    <span class="data-value" id="guardrails-status">ON</span>
+                    <span class="data-value" id="guardrails-status">OFF</span>
                 </div>
                 
                 <!-- Mode Toggle Button -->
                 <div style="margin-top: 8px;">
-                    <button id="btn-toggle-context-mode" class="control-btn active" style="font-size: 9px; width: 100%;">
-                        Internal Analysis Mode
+                    <button id="btn-toggle-context-mode" class="control-btn" style="font-size: 9px; width: 100%;">
+                        Internal Systems Analysis
                     </button>
                 </div>
                 
-                <!-- Warning when in standard mode (guardrails off) -->
+                <!-- Warning when in internal systems analysis mode (guardrails on) -->
                 <div id="context-warning" style="margin-top: 8px; font-size: 8px; color: #fa0; display: none;">
-                    ⚠️ Standard Mode: Guardrails disabled - responses may contain off-topic content
+                    ⚠️ Internal Systems Analysis: Guardrails enabled - responses restricted to technical domain
                 </div>
             </div>
         </div>

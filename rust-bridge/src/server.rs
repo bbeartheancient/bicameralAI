@@ -20,6 +20,7 @@ pub struct ChatQuery {
     pub hemisphere: Hemisphere,
     pub client_addr: SocketAddr,
     pub query_id: String,
+    pub mode: Option<String>,
 }
 
 /// Pending query waiting for both hemisphere responses
@@ -362,6 +363,7 @@ impl InferenceServer {
                         hemisphere: Hemisphere::Left,
                         client_addr,
                         query_id: format!("{}_left", query_id),
+                        mode: query.mode.clone(),
                     };
                     
                     let right_query = ChatQuery {
@@ -369,6 +371,7 @@ impl InferenceServer {
                         hemisphere: Hemisphere::Right,
                         client_addr,
                         query_id: format!("{}_right", query_id),
+                        mode: query.mode.clone(),
                     };
                     
                     // Process both queries
@@ -407,6 +410,7 @@ impl InferenceServer {
                         lmstudio_client.clone(),
                         pending_queries.clone(),
                         query_cache.clone(),
+                        query.mode.clone(),
                     ));
                 } else {
                     // Single hemisphere query - process directly
@@ -579,51 +583,92 @@ async fn process_hemisphere_query(
     // Create system prompt - DOMAIN-SPECIFIC CONTEXT to prevent hallucinations
     // CRITICAL: This system processes QAM16 network signals through FOA (First Order Ambisonic) spatialization
     // "Hemisphere" in this context means parallel AI processing paths, NOT biological brain parts
-    let system_prompt = match hemisphere {
-        Hemisphere::Left => {
-            "You are the LEFT HEMISPHERE (parallel AI processing path) of Brainscan Matrix - a network traffic analysis system. \
-            DOMAIN: QAM16 constellation signal processing with FOA (First Order Ambisonic) spatialization. \
-            YOUR ROLE: Analytical processing of network signals from the left processing path. \
-            CHANNELS: LFU quadrant (Q0-Q3), LBD quadrant (Q4-Q7). \
-            TASK: Analyze queries about network signal processing, optimization, system architecture, or bicameral tuning. \
-            CLARIFICATION: 'Bicameral' refers to dual parallel AI models processing network data - NOT brain science. \
-            ALLOWED: Technical discussion of system architecture, tuning parameters, optimization strategies. \
-            FORBIDDEN: Human brain biology, neuroscience, cognitive psychology, fMRI, visual attention research. \
-            OUTPUT: Technical response about QAM signal processing, matrix visualization, or performance optimization."
+    let is_standard_mode = query.mode.as_ref().map(|m| m == "standard").unwrap_or(false);
+    
+    info!("Processing {} hemisphere query (mode: {:?}, is_standard: {})", 
+          if hemisphere == Hemisphere::Left { "LEFT" } else { "RIGHT" },
+          query.mode, 
+          is_standard_mode);
+    println!("[HEMISPHERE DEBUG] {} hemisphere, mode={:?}, is_standard={}, using {} prompt",
+             if hemisphere == Hemisphere::Left { "LEFT" } else { "RIGHT" },
+             query.mode, 
+             is_standard_mode,
+             if is_standard_mode { "STANDARD" } else { "TECHNICAL" });
+    
+    let system_prompt = if is_standard_mode {
+        // Standard mode: Completely generic prompts, no technical terminology
+        match hemisphere {
+            Hemisphere::Left => {
+                "You are an AI assistant focused on analytical thinking. \
+                Provide detailed, logical analysis with step-by-step reasoning. \
+                IMPORTANT: Give a complete, substantive answer with specific details and examples. \
+                Do not philosophize, hedge, or suggest discussing further - answer directly and thoroughly."
+            }
+            Hemisphere::Right => {
+                "You are an AI assistant focused on creative thinking. \
+                Provide imaginative, holistic perspectives with novel ideas and patterns. \
+                IMPORTANT: Give a complete, substantive answer with creative details and original concepts. \
+                Do not philosophize, hedge, or suggest discussing further - answer directly and thoroughly."
+            }
+            Hemisphere::Both => unreachable!(),
         }
-        Hemisphere::Right => {
-            "You are the RIGHT HEMISPHERE (parallel AI processing path) of Brainscan Matrix - a network traffic analysis system. \
-            DOMAIN: QAM16 constellation signal processing with FOA (First Order Ambisonic) spatialization. \
-            YOUR ROLE: Holistic pattern recognition from the right processing path. \
-            CHANNELS: RBU quadrant (Q8-Q11), RFD quadrant (Q12-Q15). \
-            TASK: Identify patterns in network traffic, signal flow, or bicameral system behavior. \
-            CLARIFICATION: 'Bicameral' refers to dual parallel AI models - NOT biological hemispheres. \
-            ALLOWED: Technical discussion of system architecture, tuning parameters, optimization strategies. \
-            FORBIDDEN: Human brain biology, neuroscience, cognitive science, biological neural networks. \
-            OUTPUT: Pattern-focused response about signal flow, traffic patterns, or system behavior."
+    } else {
+        // Internal/Bicameral mode: Domain-restricted to QAM16/FOA signal processing
+        match hemisphere {
+            Hemisphere::Left => {
+                "You are the LEFT HEMISPHERE (parallel AI processing path) of Brainscan Matrix - a network traffic analysis system. \
+                DOMAIN: QAM16 constellation signal processing with FOA (First Order Ambisonic) spatialization. \
+                YOUR ROLE: Analytical processing of network signals from the left processing path. \
+                CHANNELS: LFU quadrant (Q0-Q3), LBD quadrant (Q4-Q7). \
+                TASK: Analyze queries about network signal processing, optimization, system architecture, or bicameral tuning. \
+                CLARIFICATION: 'Bicameral' refers to dual parallel AI models processing network data - NOT brain science. \
+                ALLOWED: Technical discussion of system architecture, tuning parameters, optimization strategies. \
+                FORBIDDEN: Human brain biology, neuroscience, cognitive psychology, fMRI, visual attention research. \
+                OUTPUT: Technical response about QAM signal processing, matrix visualization, or performance optimization."
+            }
+            Hemisphere::Right => {
+                "You are the RIGHT HEMISPHERE (parallel AI processing path) of Brainscan Matrix - a network traffic analysis system. \
+                DOMAIN: QAM16 constellation signal processing with FOA (First Order Ambisonic) spatialization. \
+                YOUR ROLE: Holistic pattern recognition from the right processing path. \
+                CHANNELS: RBU quadrant (Q8-Q11), RFD quadrant (Q12-Q15). \
+                TASK: Identify patterns in network traffic, signal flow, or bicameral system behavior. \
+                CLARIFICATION: 'Bicameral' refers to dual parallel AI models - NOT biological hemispheres. \
+                ALLOWED: Technical discussion of system architecture, tuning parameters, optimization strategies. \
+                FORBIDDEN: Human brain biology, neuroscience, cognitive science, biological neural networks. \
+                OUTPUT: Pattern-focused response about signal flow, traffic patterns, or system behavior."
+            }
+            Hemisphere::Both => unreachable!(),
         }
-        Hemisphere::Both => unreachable!(),
     };
     
     // Build user message with system context
-    let user_message = if let Some(ref spatialized) = eeg_context {
+    let user_message = if is_standard_mode {
+        // Standard mode: Minimal context, just the query
         format!(
-            "SYSTEM: Brainscan Matrix - QAM16 Network Signal Processor with FOA spatialization. \
-            Processing 16 constellation points mapped to 4 quadrants (LFU/LBD/RBU/RFD). \
-            \n\nQuery: {}\nBrain state: coherence={:.2}, dominant={}",
-            query.message,
-            if hemisphere == Hemisphere::Left { spatialized.left_coherence } else { spatialized.right_coherence },
-            if spatialized.left_coherence > spatialized.right_coherence { "L" } else { "R" }
-        )
-    } else {
-        format!(
-            "SYSTEM: Brainscan Matrix - QAM16 Network Signal Processor with FOA spatialization. \
-            Architecture: 16 constellation channels (Q0-Q15) mapped to 4 ambisonic quadrants. \
-            Implements: Sliding window pattern recognition, adaptive thresholding, signal fusion. \
-            Current optimizations: Channel reduction (16→10), pipeline efficiency monitoring, SNR tracking. \
-            \n\nQuery: {}",
+            "Query: {}",
             query.message
         )
+    } else {
+        // Internal mode: Full technical system context
+        if let Some(ref spatialized) = eeg_context {
+            format!(
+                "SYSTEM: Brainscan Matrix - QAM16 Network Signal Processor with FOA spatialization. \
+                Processing 16 constellation points mapped to 4 quadrants (LFU/LBD/RBU/RFD). \
+                \n\nQuery: {}\nBrain state: coherence={:.2}, dominant={}",
+                query.message,
+                if hemisphere == Hemisphere::Left { spatialized.left_coherence } else { spatialized.right_coherence },
+                if spatialized.left_coherence > spatialized.right_coherence { "L" } else { "R" }
+            )
+        } else {
+            format!(
+                "SYSTEM: Brainscan Matrix - QAM16 Network Signal Processor with FOA spatialization. \
+                Architecture: 16 constellation channels (Q0-Q15) mapped to 4 ambisonic quadrants. \
+                Implements: Sliding window pattern recognition, adaptive thresholding, signal fusion. \
+                Current optimizations: Channel reduction (16→10), pipeline efficiency monitoring, SNR tracking. \
+                \n\nQuery: {}",
+                query.message
+            )
+        }
     };
     
     // Send "thinking" status
@@ -666,7 +711,7 @@ async fn process_hemisphere_query(
         },
     ];
     
-    let response = match lmstudio.chat_completion(&model, messages, 0.7, 2048).await {
+    let response = match lmstudio.chat_completion(&model, messages, 0.7, 0).await {
         Ok(resp) => {
             // Cache the response
             let cache_entry = ChatResponseCacheEntry {
@@ -745,6 +790,7 @@ async fn process_comparator(
     lmstudio_client: Arc<RwLock<LMStudioClient>>,
     pending_queries: Arc<RwLock<HashMap<String, PendingQuery>>>,
     query_cache: Arc<QueryCache<ChatResponseCacheEntry>>,
+    mode: Option<String>,
 ) {
     // Wait for both responses (with timeout)
     let max_wait = std::time::Duration::from_secs(60);
@@ -810,37 +856,78 @@ async fn process_comparator(
     
     // Build comparator prompt - DOMAIN-SPECIFIC SYNTHESIZER
     // NOTE: "Bicameral" and "hemisphere" are technical terms for dual AI models, NOT brain science
-    let system_prompt = "You are the SYNTHESIZER for Brainscan Matrix - a QAM16 network signal processing system. \
-    DOMAIN: Network traffic analysis with FOA (First Order Ambisonic) spatialization. \
-    YOUR ROLE: Integrate LEFT (analytical/technical) and RIGHT (holistic/pattern-based) AI model perspectives. \
-    CLARIFICATION: 'Hemisphere' and 'bicameral' refer to parallel AI processing paths, NOT biological brain parts. \
-    INPUT FORMAT: Query + Left AI model response + Right AI model response. \
-    OUTPUT: Unified, coherent response about QAM signal processing, system architecture, or optimization. \
-    CONSTRAINTS: \
-    - ALLOWED: Technical discussion of bicameral architecture, tuning parameters, system optimization. \
-    - ALLOWED: References to 'left hemisphere' and 'right hemisphere' as AI processing paths. \
-    - FORBIDDEN: Human brain biology, neuroscience, cognitive psychology, fMRI, biological neural networks. \
-    - FORBIDDEN: Image processing, computer vision, visual attention mechanisms. \
-    - ONLY discuss: network traffic, QAM modulation, signal processing, matrix visualization, performance metrics. \
-    - If biological content detected, respond with: 'Note: Discussing technical architecture only - no brain science content.'";
+    let is_standard_mode = mode.as_ref().map(|m| m == "standard").unwrap_or(false);
+    
+    info!("Comparator processing query (mode: {:?}, is_standard: {})", mode, is_standard_mode);
+    println!("[COMPARATOR DEBUG] mode={:?}, is_standard={}, will use {} prompt", 
+             mode, is_standard_mode, 
+             if is_standard_mode { "STANDARD/GENERIC" } else { "TECHNICAL/QAM16" });
+    
+    let system_prompt = if is_standard_mode {
+        // Standard mode: Generic synthesis prompt, no technical references
+        "You are a response synthesizer. \
+        YOUR TASK: Combine two AI responses (one analytical, one creative) into a single cohesive answer. \
+        INPUT FORMAT: Query + Analytical response + Creative response. \
+        OUTPUT REQUIREMENTS: \
+        1. Provide a COMPLETE, SUBSTANTIVE answer that directly addresses the user's query. \
+        2. Integrate specific details, examples, and concrete information from both responses. \
+        3. Create a unified response that flows naturally without labeling which part came from which model. \
+        4. Do NOT give vague philosophical musings or deflect the question. \
+        5. Do NOT suggest discussing further - answer the question fully now. \
+        6. Structure the response with clear sections or points for readability."
+    } else {
+        // Internal/Bicameral mode: Domain-restricted to QAM16/FOA signal processing
+        "You are the SYNTHESIZER for Brainscan Matrix - a QAM16 network signal processing system. \
+        DOMAIN: Network traffic analysis with FOA (First Order Ambisonic) spatialization. \
+        YOUR ROLE: Integrate LEFT (analytical/technical) and RIGHT (holistic/pattern-based) AI model perspectives. \
+        CLARIFICATION: 'Hemisphere' and 'bicameral' refer to parallel AI processing paths, NOT biological brain parts. \
+        INPUT FORMAT: Query + Left AI model response + Right AI model response. \
+        OUTPUT: Unified, coherent response about QAM signal processing, system architecture, or optimization. \
+        CONSTRAINTS: \
+        - ALLOWED: Technical discussion of bicameral architecture, tuning parameters, system optimization. \
+        - ALLOWED: References to 'left hemisphere' and 'right hemisphere' as AI processing paths. \
+        - FORBIDDEN: Human brain biology, neuroscience, cognitive psychology, fMRI, biological neural networks. \
+        - FORBIDDEN: Image processing, computer vision, visual attention mechanisms. \
+        - ONLY discuss: network traffic, QAM modulation, signal processing, matrix visualization, performance metrics. \
+        - If biological content detected, respond with: 'Note: Discussing technical architecture only - no brain science content.'"
+    };
     
     // Format user message with system context
-    let user_message = format!(
-        "SYSTEM: Brainscan Matrix - QAM16 Network Signal Processor. \
-        Architecture: Dual AI models (Left/Right 'hemispheres') processing 16 QAM channels. \
-        FOA Spatialization: 4 quadrants (LFU/LBD/RBU/RFD) with W/X/Y/Z coefficients. \
-        Current: Sliding window, adaptive thresholding, signal fusion, channel reduction (16→10). \
-        
+    let user_message = if is_standard_mode {
+        // Standard mode: Clean, generic format
+        format!(
+            "USER QUESTION: {}
+
+ANALYTICAL PERSPECTIVE:
+{}
+
+CREATIVE PERSPECTIVE:
+{}
+
+SYNTHESIZE these perspectives into a single comprehensive answer to the user's question. Be specific and thorough.",
+            original_query, 
+            left_response, 
+            right_response
+        )
+    } else {
+        // Internal mode: Full technical system context
+        format!(
+            "SYSTEM: Brainscan Matrix - QAM16 Network Signal Processor. \
+            Architecture: Dual AI models (Left/Right 'hemispheres') processing 16 QAM channels. \
+            FOA Spatialization: 4 quadrants (LFU/LBD/RBU/RFD) with W/X/Y/Z coefficients. \
+            Current: Sliding window, adaptive thresholding, signal fusion, channel reduction (16→10).
+            
 Query: {}
 ---LEFT AI MODEL (analytical path)---
 {}
 ---RIGHT AI MODEL (pattern path)---
 {}
 ---SYNTHESIZE into unified technical response---",
-        original_query, 
-        left_response, 
-        right_response
-    );
+            original_query, 
+            left_response, 
+            right_response
+        )
+    };
     
     // Query comparator model
     let lmstudio = lmstudio_client.read().await;
@@ -855,7 +942,7 @@ Query: {}
         },
     ];
     
-    match lmstudio.chat_completion(&comparator_model, messages, 0.7, 4096).await {
+    match lmstudio.chat_completion(&comparator_model, messages, 0.7, 0).await {
         Ok(combined_response) => {
             // Cache the combined response
             let full_response = format!(
@@ -1003,36 +1090,69 @@ async fn process_single_query(
     };
     
     // Create system prompt
-    let system_prompt = match hemisphere {
-        Hemisphere::Left => {
-            "You are the LEFT hemisphere of a bicameral AI system. \
-            You process analytically, sequentially, with logic and detail. \
-            You monitor QAM16 constellation channels Q0-Q7 (LFU: Q0-Q3, LBD: Q4-Q7) \
-            representing Left Front Up and Left Back Down quadrants. \
-            When answering, approach problems methodically and break them down."
+    let is_standard_mode = query.mode.as_ref().map(|m| m == "standard").unwrap_or(false);
+    
+    info!("Processing single {} hemisphere query (mode: {:?}, is_standard: {})", 
+          if hemisphere == Hemisphere::Left { "LEFT" } else { "RIGHT" },
+          query.mode, 
+          is_standard_mode);
+    
+    let system_prompt = if is_standard_mode {
+        // Standard mode: Completely generic prompts, no technical terminology
+        match hemisphere {
+            Hemisphere::Left => {
+                "You are an AI assistant focused on analytical thinking. \
+                Provide detailed, logical analysis with step-by-step reasoning. \
+                IMPORTANT: Give a complete, substantive answer with specific details and examples. \
+                Do not philosophize, hedge, or suggest discussing further - answer directly and thoroughly."
+            }
+            Hemisphere::Right => {
+                "You are an AI assistant focused on creative thinking. \
+                Provide imaginative, holistic perspectives with novel ideas and patterns. \
+                IMPORTANT: Give a complete, substantive answer with creative details and original concepts. \
+                Do not philosophize, hedge, or suggest discussing further - answer directly and thoroughly."
+            }
+            Hemisphere::Both => unreachable!(),
         }
-        Hemisphere::Right => {
-            "You are the RIGHT hemisphere of a bicameral AI system. \
-            You process holistically, intuitively, with patterns and creativity. \
-            You monitor QAM16 constellation channels Q8-Q15 (RBU: Q8-Q11, RFD: Q12-Q15) \
-            representing Right Back Up and Right Front Down quadrants. \
-            When answering, look for patterns and big-picture connections."
+    } else {
+        // Internal/Bicameral mode: Technical domain prompts
+        match hemisphere {
+            Hemisphere::Left => {
+                "You are the LEFT hemisphere of a bicameral AI system. \
+                You process analytically, sequentially, with logic and detail. \
+                You monitor QAM16 constellation channels Q0-Q7 (LFU: Q0-Q3, LBD: Q4-Q7) \
+                representing Left Front Up and Left Back Down quadrants. \
+                When answering, approach problems methodically and break them down."
+            }
+            Hemisphere::Right => {
+                "You are the RIGHT hemisphere of a bicameral AI system. \
+                You process holistically, intuitively, with patterns and creativity. \
+                You monitor QAM16 constellation channels Q8-Q15 (RBU: Q8-Q11, RFD: Q12-Q15) \
+                representing Right Back Up and Right Front Down quadrants. \
+                When answering, look for patterns and big-picture connections."
+            }
+            Hemisphere::Both => unreachable!(),
         }
-        Hemisphere::Both => unreachable!(),
     };
     
     // Build user message
-    let user_message = if let Some(ref spatialized) = eeg_context {
-        format!(
-            "{}\n\nCurrent brain state context:\n\
-            Overall coherence: {:.2}\n\
-            Your hemisphere activity: {:.2}",
-            query.message,
-            spatialized.coherence,
-            if hemisphere == Hemisphere::Left { spatialized.left_coherence } else { spatialized.right_coherence }
-        )
-    } else {
+    let user_message = if is_standard_mode {
+        // Standard mode: Just the query, no technical context
         query.message.clone()
+    } else {
+        // Internal mode: Include EEG context if available
+        if let Some(ref spatialized) = eeg_context {
+            format!(
+                "{}\n\nCurrent brain state context:\n\
+                Overall coherence: {:.2}\n\
+                Your hemisphere activity: {:.2}",
+                query.message,
+                spatialized.coherence,
+                if hemisphere == Hemisphere::Left { spatialized.left_coherence } else { spatialized.right_coherence }
+            )
+        } else {
+            query.message.clone()
+        }
     };
     
     // Send "thinking" status
@@ -1074,7 +1194,7 @@ async fn process_single_query(
         },
     ];
     
-    match lmstudio.chat_completion(&model, messages, 0.7, 2048).await {
+    match lmstudio.chat_completion(&model, messages, 0.7, 0).await {
         Ok(response) => {
             // Cache the response
             let cache_entry = ChatResponseCacheEntry {
@@ -1233,14 +1353,14 @@ async fn handle_client(
                                     model_id: left,
                                     purpose: "analytical".to_string(),
                                     temperature: 0.7,
-                                    max_tokens: 500,
+                                    max_tokens: 0,
                                 },
                                 HemisphereConfig {
                                     hemisphere: Hemisphere::Right,
                                     model_id: right,
                                     purpose: "intuitive".to_string(),
                                     temperature: 0.7,
-                                    max_tokens: 500,
+                                    max_tokens: 0,
                                 },
                             ];
                             
@@ -1281,8 +1401,10 @@ async fn handle_client(
                             *cm = model_id.clone();
                             info!("Client {} set comparator model to {}", addr, model_id);
                         }
-                        ClientMessage::ChatMessage { message, hemisphere } => {
-                            info!("Chat from {}: {}", addr, message);
+                        ClientMessage::ChatMessage { message, hemisphere, mode } => {
+                            let mode_str = mode.as_ref().map(|m| m.as_str()).unwrap_or("none");
+                            info!("Chat from {} (mode: {}): {}", addr, mode_str, message);
+                            println!("[CHAT DEBUG] Received chat message from {} with mode: {:?}", addr, mode);
                             
                             // Generate unique query ID for tracking
                             let query_id = format!("{}_{}", addr.port(), std::time::SystemTime::now()
@@ -1296,6 +1418,7 @@ async fn handle_client(
                                 hemisphere: hemisphere.unwrap_or(Hemisphere::Both),
                                 client_addr: addr,
                                 query_id,
+                                mode,
                             };
                             
                             if let Err(e) = chat_tx.send(query).await {
