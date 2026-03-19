@@ -15,7 +15,7 @@ This guide shows you how to add **Bicameral AI** as a custom model provider in O
 
 ## Prerequisites
 
-1. **Bicameral AI Bridge running** (rust-bridge on port 9001)
+1. **Bicameral AI Bridge running** (rust-bridge WebSocket on port 8766)
 2. **LM Studio** with models loaded
 3. **OpenCode Desktop v1.2.26** installed
 4. **Node.js** installed (for REST bridge)
@@ -23,7 +23,7 @@ This guide shows you how to add **Bicameral AI** as a custom model provider in O
 ## Architecture
 
 ```
-OpenCode Desktop → REST API (port 9002) → WebSocket (port 9001) → Bicameral AI
+OpenCode Desktop → REST API (port 9002) → WebSocket (port 8766) → Bicameral AI
 ```
 
 OpenCode Desktop requires OpenAI-compatible REST API. We provide a bridge that:
@@ -55,7 +55,7 @@ node rest-bridge.js
 You should see:
 ```
 ✓ Bicameral REST Bridge running on http://localhost:9002/v1
-✓ Bridging to WebSocket: ws://localhost:9001
+✓ Bridging to WebSocket: ws://localhost:8766
 ```
 
 ### Step 2: Configure OpenCode Desktop
@@ -140,7 +140,7 @@ Create `opencode.json` in your project directory:
          │ WebSocket
          ▼
 ┌─────────────────┐
-│ Rust Bridge     │ (WebSocket on port 9001)
+│ Rust Bridge     │ (WebSocket on port 8766)
 │ rust-bridge     │
 └────────┬────────┘
          │ HTTP /v1/chat/completions
@@ -204,7 +204,7 @@ pm2 logs bicameral-rest-bridge
 - REST bridge not running
 - Solution: `node rest-bridge.js`
 
-**"Connection refused" on port 9001**
+**"Connection refused" on port 8766**
 - Bicameral rust-bridge not running
 - Solution: `cd rust-bridge && cargo run`
 
@@ -343,5 +343,5 @@ node rest-bridge.js  # (shows console output)
 
 **Check all services:**
 - Port 1234: LM Studio
-- Port 9001: Bicameral rust-bridge  
+- Port 8766: Bicameral rust-bridge (WebSocket)  
 - Port 9002: REST bridge (OpenCode Desktop connects here)

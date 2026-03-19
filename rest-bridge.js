@@ -19,7 +19,7 @@ class BicameralRestBridge {
     constructor(config = {}) {
         this.config = {
             restPort: config.restPort || 9002,
-            wsUrl: config.wsUrl || 'ws://localhost:9001',
+            wsUrl: config.wsUrl || 'ws://localhost:8766',
             ...config
         };
         
