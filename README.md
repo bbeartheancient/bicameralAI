@@ -4,12 +4,52 @@ A **high-performance bicameral AI system** that processes network signals throug
 
 ## 📝 Recent Changes (March 2025)
 
-- **Dual Mode Support**: Added Standard Mode (general-purpose AI) and Internal Systems Analysis Mode (technical QAM/FOA focus)
+- **OpEncode API Layer**: Added `opencode-api.js` - a complete JavaScript API for programmatic access
+- **Per-Model Token Limits**: Separate max tokens for Left (2048), Right (2048), and Comparator (8192)
+- **Dual Mode Support**: Standard Mode (general-purpose AI) and Internal Systems Analysis Mode (technical QAM/FOA focus)
 - **Smart Model Selection**: Auto-clears invalid cached models when models change in LM Studio
-- **LM Studio Integration**: Token counts now use LM Studio server settings (set to 0 for default)
+- **LM Studio Integration**: Token counts now use LM Studio server settings
 - **Enhanced Prompts**: Standard mode uses generic AI prompts without technical domain restrictions
 - **Debug Logging**: Added comprehensive logging for mode tracking and prompt selection
 - **UI Improvements**: Renamed "Internal Analysis Mode" to "Internal Systems Analysis" with clearer button behavior
+
+## 🔌 OpEncode API
+
+Use the JavaScript API to programmatically interact with the bicameral AI system:
+
+```javascript
+// Basic usage
+const api = new OpEncodeAPI({ baseUrl: 'ws://localhost:9001' });
+await api.connect();
+
+const response = await api.query({
+    message: 'imagine a purple cat',
+    hemisphere: 'both',
+    mode: 'standard'
+});
+
+console.log(response.message);
+```
+
+### API Features
+
+- **WebSocket Connection**: Persistent connection with auto-reconnect
+- **Query Interface**: Type-safe queries with validation
+- **Batch Processing**: Process multiple queries with concurrency control
+- **Middleware Support**: Chainable middleware for custom logic
+- **Caching**: Built-in response caching
+- **Progress Tracking**: Real-time progress for batch operations
+- **Model Management**: Dynamic model switching per hemisphere
+- **Event System**: Subscribe to responses, errors, and model updates
+
+### Examples
+
+See `opencode-api-examples.js` for comprehensive usage examples including:
+- Basic queries and batch processing
+- Middleware implementation
+- Model management and switching
+- Error handling and reconnection
+- Progress tracking
 
 ## 🧠 What It Does
 
