@@ -171,52 +171,69 @@ class BicameralRestBridge {
                 }));
             });
 
+            // Track if we've received the final comparator response
+            let receivedComparator = false;
+            let bufferMessages = [];
+
             ws.on('message', (data) => {
                 try {
                     const msg = JSON.parse(data);
                     
+                    // Log for debugging
                     if (msg.type === 'chat_response') {
-                        // Convert to OpenAI format
-                        const openaiResponse = {
-                            id: `chatcmpl-${Date.now()}`,
-                            object: 'chat.completion',
-                            created: Math.floor(Date.now() / 1000),
-                            model: request.model,
-                            choices: [{
-                                index: 0,
-                                message: {
-                                    role: 'assistant',
-                                    content: msg.message
-                                },
-                                finish_reason: 'stop'
-                            }],
-                            usage: {
-                                prompt_tokens: 0, // We don't track these
-                                completion_tokens: msg.message.split(/\s+/).length,
-                                total_tokens: msg.message.split(/\s+/).length
-                            }
-                        };
+                        console.log(`[REST Bridge] Received response from ${msg.hemisphere || 'unknown'}`);
+                        
+                        // The 'both' hemisphere response is the final comparator output
+                        if (msg.hemisphere === 'both' || !msg.hemisphere) {
+                            receivedComparator = true;
+                            
+                            // Convert to OpenAI format
+                            const openaiResponse = {
+                                id: `chatcmpl-${Date.now()}`,
+                                object: 'chat.completion',
+                                created: Math.floor(Date.now() / 1000),
+                                model: request.model,
+                                choices: [{
+                                    index: 0,
+                                    message: {
+                                        role: 'assistant',
+                                        content: msg.message
+                                    },
+                                    finish_reason: 'stop'
+                                }],
+                                usage: {
+                                    prompt_tokens: 0,
+                                    completion_tokens: msg.message.split(/\s+/).length,
+                                    total_tokens: msg.message.split(/\s+/).length
+                                }
+                            };
 
-                        ws.close();
-                        resolve(openaiResponse);
+                            ws.close();
+                            resolve(openaiResponse);
+                        }
                     } else if (msg.type === 'error') {
+                        console.error('[REST Bridge] Error from backend:', msg.message);
                         ws.close();
                         reject(new Error(msg.message));
                     }
                 } catch (error) {
-                    console.error('Error parsing WebSocket message:', error);
+                    console.error('[REST Bridge] Error parsing WebSocket message:', error);
                 }
             });
 
             ws.on('error', (error) => {
+                console.error('[REST Bridge] WebSocket error:', error);
                 reject(new Error(`WebSocket error: ${error.message}`));
             });
 
-            // Timeout after 60 seconds
+            // Timeout after 120 seconds (bicameral processing takes longer)
             setTimeout(() => {
-                ws.close();
-                reject(new Error('Request timeout'));
-            }, 60000);
+                if (!receivedComparator) {
+                    console.error('[REST Bridge] Timeout waiting for comparator response');
+                    ws.close();
+                    reject(new Error('Request timeout - bicameral processing exceeded 120 seconds'));
+                }
+            }, 120000);
         });
     }
 
