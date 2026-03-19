@@ -296,6 +296,8 @@ Contributions welcome! Please:
 - Rust for high-performance bridge
 - FOA spatialization concepts from ambisonic audio research
 - Bicameral AI architecture inspired by cognitive science research
+- UI elements from https://github.com/bagusindrayana/ews-concept-new
+- 3d brain model generated using diffusion model from https://github.com/NVIDIA-Medtech/NV-Generate-CTMR
 
 ---
 
