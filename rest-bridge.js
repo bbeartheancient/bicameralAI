@@ -115,12 +115,18 @@ class BicameralRestBridge {
         req.on('data', chunk => body += chunk);
         req.on('end', async () => {
             try {
+                console.log('[REST Bridge] Received chat completion request');
                 const request = JSON.parse(body);
+                console.log(`[REST Bridge] Model: ${request.model}, Messages: ${request.messages?.length || 0}`);
+                
                 const response = await this.processChatCompletion(request);
-                res.writeHead(200);
+                
+                console.log(`[REST Bridge] Sending HTTP 200 response, content length: ${JSON.stringify(response).length}`);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(response));
+                console.log('[REST Bridge] HTTP response sent successfully');
             } catch (error) {
-                console.error('Error processing chat completion:', error);
+                console.error('[REST Bridge] Error processing chat completion:', error.message);
                 res.writeHead(500);
                 res.end(JSON.stringify({ 
                     error: {
@@ -187,6 +193,8 @@ class BicameralRestBridge {
                         if (msg.hemisphere === 'both' || !msg.hemisphere) {
                             receivedComparator = true;
                             
+                            console.log(`[REST Bridge] Final comparator response received, length: ${msg.message?.length || 0}`);
+                            
                             // Convert to OpenAI format
                             const openaiResponse = {
                                 id: `chatcmpl-${Date.now()}`,
@@ -203,13 +211,17 @@ class BicameralRestBridge {
                                 }],
                                 usage: {
                                     prompt_tokens: 0,
-                                    completion_tokens: msg.message.split(/\s+/).length,
-                                    total_tokens: msg.message.split(/\s+/).length
+                                    completion_tokens: msg.message?.split(/\s+/)?.length || 0,
+                                    total_tokens: msg.message?.split(/\s+/)?.length || 0
                                 }
                             };
 
+                            console.log('[REST Bridge] Sending response to OpenCode Desktop');
+                            
                             ws.close();
                             resolve(openaiResponse);
+                            
+                            console.log('[REST Bridge] Promise resolved successfully');
                         }
                     } else if (msg.type === 'error') {
                         console.error('[REST Bridge] Error from backend:', msg.message);
